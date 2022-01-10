@@ -1,0 +1,92 @@
+html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-image: radial-gradient(#404040, #303030, #202020);
+    margin: 0;
+    padding: 0;
+}
+
+.input-view {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.input-request-endpoint {
+    background-color: #505050;
+    border: 0;
+    border-radius: 2px;
+    color: #c0c0c0;
+    padding: 5px;
+    text-align: center;
+    width: 200px;
+}
+
+.input-request-endpoint:focus {
+    outline: none;
+}
+
+.button-get {
+    background-color: #505050;
+    border: 0;
+    border-radius: 2px;
+    color: #c0c0c0;
+    outline: none;
+    padding: 5px;
+}
+
+.button-get:hover {
+    background-color: #606060;
+    cursor: pointer;
+}
+
+.button-get:active {
+    background-color: #404040;
+    cursor: pointer;
+}
+
+.posts-view {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    padding: 20px;
+}
+
+.thumbnail-anchor {
+    /*border: 1px solid rgba(255,255,255,0.5);*/
+    border: 1px solid black;
+    border-radius: 2px;
+    box-shadow: 0px 0px 13px 3px black;
+    position: relative;
+    height: 56px;
+    width: 100px;
+}
+
+.thumbnail-title {
+    align-items: center;
+    background-color: rgba(0,0,0,0.25);
+    /* border-radius: 2px; */
+    bottom: 0px;
+    box-sizing: border-box;
+    color: rgba(255,255,255,0.25);
+    display: flex;
+    font-family: consolas;
+    font-size: 10px;
+    justify-content: center;
+    padding:3px;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+}
+
+.thumbnail-title:hover {
+    background-color: rgba(0,0,0,0.8);
+    color: rgba(255,255,255,0.8);
+}
