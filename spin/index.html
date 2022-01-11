@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+    <title>chadschw - spin</title>
+    <head>
+        <style>
+            html {
+                font-size: 62.5%;
+                font-family: monospace;
+                user-select: none;
+            }
+            html, body { 
+                height: 100%;
+                margin: 0px;
+            }
+            body {
+                background-image: radial-gradient(#ffffff, #dfdfdf, #bfbfbf);
+                overflow: hidden;
+            }
+            .layer {
+                display: flex;
+                height: 100%;
+                align-items: center;
+                justify-content: center;
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="layer">
+            <div id="spinner"><img src="img/spin2.svg"></div>
+        </div>
+        <div class="layer">
+            <div id="spinner2"><img src="img/spin1-darkgray.svg"></div>
+        </div>
+        <div class="layer" style="font-size: 2.0rem; pointer-events: none;">
+            <span style="background-color: white; padding: 5px; border-radius: 5px;">Hi.</span>
+        </div>
+        
+        <script>
+            const spinner = document.getElementById("spinner");
+            const spinner2 = document.getElementById("spinner2");
+            
+            let angle = 0;
+            let angleVelocity = 0;
+            const frictionCoeff = 0.999;
+            const bump = 1.0;            
+            
+            spinner2.onmousedown = e => {
+                if (angleVelocity === 0) {
+                    angleVelocity = 3;
+                    animate();
+                } else {
+                    angleVelocity += bump;
+                }
+            }
+
+            
+
+            function animate(e) {
+                angle += angleVelocity;
+                angle = angle % 360;
+
+                angleVelocity *= frictionCoeff;
+                if (angleVelocity < 0.01) { 
+                    angleVelocity = 0; 
+                } else {
+                    spinner.style.transform = `rotate(${angle}deg)`;
+                    spinner2.style.transform = `rotate(-${angle}deg)`;
+                    requestAnimationFrame(animate);
+                }
+            }
+        </script>
+    </body>
+</html>
