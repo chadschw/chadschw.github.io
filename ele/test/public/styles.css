@@ -1,0 +1,24 @@
+
+html, body {
+    cursor: none;
+    margin: 0;
+    height: 100%;
+}
+
+
+
+.tail-link {
+    background-color: burlywood;
+    border-radius: 10px;
+    height: 20px;
+    opacity: 0.5;
+    position: absolute;
+    width: 20px;
+}
+
+.food {
+    background-color: cadetblue;
+    height: 20px;
+    position: absolute;
+    width: 20px;
+}
