@@ -51,6 +51,16 @@ class Ele {
     addChild(kid) {
         return this.children([kid]);
     }
+
+    setOnMouseDown(action) {
+        this.target.onmousedown = action;
+        return this;
+    }
+
+    setOnClick(action) {
+        this.target.onclick = action;
+        return this;
+    }
 }
 
 class Page extends Ele {

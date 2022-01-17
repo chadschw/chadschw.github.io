@@ -121,6 +121,21 @@ class Posts extends Flex {
             // });
             e.preventDefault();
         }
+
+        this.target.onmousedown = (e) => {
+            this.mousedown = true;
+            window.addEventListener("mousemove", this.OnMouseMove);
+            window.addEventListener("mouseup", this.OnMouseUp);
+        }
+    }
+
+    OnMouseMove = (e) => {
+        this.target.scrollLeft -= e.movementX;
+    }
+
+    OnMouseUp = (e) => {
+        window.removeEventListener("mousemove", this.OnMouseMove);
+        window.removeEventListener("mouseup", this.OnMouseUp);
     }
 
     AddPosts(response) {
@@ -154,7 +169,36 @@ class PostInfo {
         if (postData.preview && postData.preview.enabled) {
             this.preview = new Preview(postData.preview);
         }
-        
+    }
+
+    NumPreviewImageSizes() {
+        if (!this.preview) {
+            return 0;
+        } else {
+            return this.preview.previewImgs.length;
+        }
+    }
+
+    SmallSizePreviewUrl() {
+        const numPreviewSizes = this.NumPreviewImageSizes();
+        if (numPreviewSizes === 0) {
+            return "";
+        } else {
+            this.preview.previewImgs[0].url;
+        }
+    }
+
+    MedSizePreviewUrl() {
+        const numPreviewSizes = this.NumPreviewImageSizes();
+        if (numPreviewSizes === 0) {
+            return "";
+        } else if (numPreviewSizes === 1) {
+            return this.preview.previewImgs[0].url;
+        } else if (numPreviewSizes === 2) {
+            return this.preview.previewImgs[1].url;
+        } else {
+            return this.preview.previewImgs[2].url;
+        }
     }
 }
 
@@ -164,6 +208,23 @@ class Preview {
         this.id = images.id;
         this.previewImgs = images.resolutions.map(res => new PreviewImg(res));
         this.source = new PreviewImg(images.source);
+        this.downloadUrl = this.MakeDownloadUrl();
+        this.downloadFilename = this.MakeDownloadFilename();
+    }
+
+    MakeDownloadUrl() {
+        return this.source.url.replace("preview", "i");
+    }
+
+    MakeDownloadFilename() {
+        const url = this.source.url;
+        const a = url.split("?")[0];
+        const b = a.split(".");
+        const extension = b.pop();
+        const name = b.pop().split("/")[1];
+        const fullname = `${name}.${extension}`;
+        console.debug(fullname);
+        return fullname;
     }
 }
 
@@ -181,7 +242,7 @@ class PostView extends Div
         super();
         
         if (postInfo.preview) {
-            this.addChild(new ThumbnailAnchor(postInfo));
+            this.addChild(new PreviewThumbnail(postInfo));
         }
         else {
             this.addChild(new TextAnchor(postInfo));
@@ -189,48 +250,151 @@ class PostView extends Div
     }
 }
 
-class ThumbnailAnchor extends Anchor {
+class PreviewThumbnail extends Div {
     constructor(postInfo) {
         super();
-        this.href(postInfo.preview.source.url);
-        this.setTarget("_blank");
-        
-        this.addChild(
-            div()
-                .addClass("thumbnail-anchor")
-                .addChild(
-                    img()
-                        .src(postInfo.preview.previewImgs[0].url)
-                        .styleAttr(`
-                            display: block;
-                        `)
-                )
-        );
-        
-        //div.style.background = `url("${postInfo.url}")`; // Note: the url is the full size photo which can be a couple MB big. Good thing I have gigabit speed.
-        // div.style.background = `url("${postInfo.thumbnail}")`;
-        // div.style.backgroundPosition = "center";
-        // div.style.backgroundSize = "cover";
-        
-        // const title = document.createElement("div");
-        // //title.innerHTML = postInfo.title;
-        // title.innerHTML = `${postInfo.dateCreated.toLocaleString()} downs: ${postInfo.downs} ups: ${postInfo.ups}<br>${postInfo.title}`;
-        // title.classList.add("thumbnail-title");
-        
-        // this.target = document.createElement("a");
-        // //this.target.href = postInfo.url;
-        // this.target.href = postInfo.preview.source.url;
-        // this.target.target = "_blank";
-        // this.target.style.border = "0";
-        // this.target.appendChild(div);
+        this.postInfo = postInfo;
+        this.addClass("thumbnail-anchor");
+        this.mousemoved = false;
+        this.children([
+            img()
+                .src(postInfo.MedSizePreviewUrl())
+                .styleAttr(`display: block;`)
+                .setOnMouseDown(this.OnMouseDown),
+            flex().children([
+                div().addChild(span(postInfo.title)),
+                div().addChild(span(postInfo.dateCreated.toLocaleDateString() + " " + postInfo.dateCreated.toLocaleTimeString())),
+                div().addChild(span(`${postInfo.preview.source.width}x${postInfo.preview.source.height}`)),
+                div().addChild(
+                    anchor()
+                        .href(PostInfo.permalinkBase + postInfo.permalink)
+                        .addChild(span("comments"))
+                        .styleAttr("color: rgba(255, 255, 255, 0.8);")
+                        .setTarget("_blank")
+                ),
+                div().addChild(
+                    anchor()
+                        .setOnClick((e) => this.Download({
+                            url: postInfo.preview.downloadUrl, 
+                            filename: postInfo.preview.downloadFilename
+                        }))
+                        .href("#")
+                        .addChild(span("download"))
+                        .styleAttr("color: rgba(255, 255, 255, 0.8);")
+                ),
+            ]).styleAttr(`
+                flex-direction: column;
+                margin-top: 10px;
+            `)
 
-        // div.onclick = e => {
-        //     $.get(PostInfo.permalinkBase + postInfo.permalink + ".json", (response, status) => {
-        //         console.log(response);
-        //     });
-        // }
+
+
+
+            
+        // this.permalink = postData.permalink;
+        // this.postHint = postData.post_hint;
+        // this.downs = postData.downs;
+        // this.ups = postData.ups;
+
+        // // created_utc is seconds since epoch. Multiple by 1000 to pass milliseconds to Date
+        // this.dateCreated = new Date(postData.created_utc * 1000);
+        ])
+    }
+
+    OnMouseDown = (e) => {
+        this.mousemoved = false;
+        this.mouseDownEvent = e;
+        e.preventDefault();
+        window.addEventListener("mousemove", this.OnMouseMove);
+        window.addEventListener("mouseup", this.OnMouseUp);
+    }
+
+    OnMouseMove = (e) => {
+        if (this.mousemoved) {
+            return;
+        }
+
+        const deltaX = Math.abs(e.clientX - this.mouseDownEvent.clientX);
+        const deltaY = Math.abs(e.clientY - this.mouseDownEvent.clientY);
+
+        //console.debug(`mouse moved ${e.movementX},${e.movementY}`);
+        if (deltaX > 4 || deltaY > 4) {
+            console.debug("mouse moved.");
+            this.mousemoved = true;
+        }
+    }
+
+    OnMouseUp = (e) => {
+        if (!this.mousemoved) {
+            window.open(this.postInfo.preview.source.url);
+        }
+
+        window.removeEventListener("mousemove", this.OnMouseMove);
+        window.removeEventListener("mouseup", this.OnMouseUp);
+    }
+
+    /**
+     * Modern browsers can download files that aren't from same origin this is a workaround to download a remote file
+     * @param `url` Remote URL for the file to be downloaded
+     */
+    Download = ({ url, filename }) => {
+        fetch(url)
+            .then(response => response.blob())
+            .then(blob => {
+                const blobURL = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = blobURL;
+                a.style = "display: none";
+
+                if (filename && filename.length) a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+            })
+            .catch((e) => console.error(e));
     }
 }
+
+// class ThumbnailAnchor extends Anchor {
+//     constructor(postInfo) {
+//         super();
+//         this.href(postInfo.preview.source.url);
+//         this.setTarget("_blank");
+        
+//         this.addChild(
+//             div()
+//                 .addClass("thumbnail-anchor")
+//                 .addChild(
+//                     img()
+//                         .src(postInfo.preview.previewImgs[0].url)
+//                         .styleAttr(`display: block;`)
+//                         .setOnMouseDown((e) => e.preventDefault())
+//                 )
+//         );
+        
+//         //div.style.background = `url("${postInfo.url}")`; // Note: the url is the full size photo which can be a couple MB big. Good thing I have gigabit speed.
+//         // div.style.background = `url("${postInfo.thumbnail}")`;
+//         // div.style.backgroundPosition = "center";
+//         // div.style.backgroundSize = "cover";
+        
+//         // const title = document.createElement("div");
+//         // //title.innerHTML = postInfo.title;
+//         // title.innerHTML = `${postInfo.dateCreated.toLocaleString()} downs: ${postInfo.downs} ups: ${postInfo.ups}<br>${postInfo.title}`;
+//         // title.classList.add("thumbnail-title");
+        
+//         // this.target = document.createElement("a");
+//         // //this.target.href = postInfo.url;
+//         // this.target.href = postInfo.preview.source.url;
+//         // this.target.target = "_blank";
+//         // this.target.style.border = "0";
+//         // this.target.appendChild(div);
+
+//         // div.onclick = e => {
+//         //     $.get(PostInfo.permalinkBase + postInfo.permalink + ".json", (response, status) => {
+//         //         console.log(response);
+//         //     });
+//         // }
+//     }
+// }
 
 class TextAnchor extends Anchor {
     constructor(postInfo) {
