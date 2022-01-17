@@ -1,5 +1,5 @@
 
-import { anchor, Anchor, button, div, Div, flex, Flex, img, page, span, textInput } from "../lib/ele.js";
+import { anchor, Anchor, button, div, Div, download, flex, Flex, img, page, span, textInput } from "../lib/ele.js";
 
 $(document).ready(() => new App());
 
@@ -209,11 +209,15 @@ class Preview {
         this.previewImgs = images.resolutions.map(res => new PreviewImg(res));
         this.source = new PreviewImg(images.source);
         this.downloadUrl = this.MakeDownloadUrl();
+        this.copyUrl = this.MakeDownloadUrl().split("?")[0];
         this.downloadFilename = this.MakeDownloadFilename();
     }
 
     MakeDownloadUrl() {
-        return this.source.url.replace("preview", "i");
+        return this.source.url
+            .replace("preview", "i")
+            .replace("external-i", "i")
+            .replace("external-preview", "i");
     }
 
     MakeDownloadFilename() {
@@ -262,9 +266,9 @@ class PreviewThumbnail extends Div {
                 .styleAttr(`display: block;`)
                 .setOnMouseDown(this.OnMouseDown),
             flex().children([
-                div().addChild(span(postInfo.title)),
-                div().addChild(span(postInfo.dateCreated.toLocaleDateString() + " " + postInfo.dateCreated.toLocaleTimeString())),
-                div().addChild(span(`${postInfo.preview.source.width}x${postInfo.preview.source.height}`)),
+                div().addChild(span(postInfo.title).styleAttr("font-size: 1.8rem; text-align: center;")),
+                div().addChild(span(`${postInfo.dateCreated.toLocaleDateString()} ${postInfo.dateCreated.toLocaleTimeString()}`)),
+                div().addChild(span(`${postInfo.postHint} | ${postInfo.preview.source.width}x${postInfo.preview.source.height}`)),
                 div().addChild(
                     anchor()
                         .href(PostInfo.permalinkBase + postInfo.permalink)
@@ -274,14 +278,18 @@ class PreviewThumbnail extends Div {
                 ),
                 div().addChild(
                     anchor()
-                        .setOnClick((e) => this.Download({
-                            url: postInfo.preview.downloadUrl, 
-                            filename: postInfo.preview.downloadFilename
-                        }))
+                        .setOnClick((e) => download(postInfo.preview.downloadUrl, postInfo.preview.downloadFilename))
                         .href("#")
-                        .addChild(span("download"))
+                        .addChild(span(`download ${postInfo.preview.downloadFilename}`))
                         .styleAttr("color: rgba(255, 255, 255, 0.8);")
                 ),
+                div().addChild(
+                    anchor()
+                        .setOnClick((e) => navigator.clipboard.writeText(postInfo.preview.copyUrl))
+                        .href("#")
+                        .addChild(span(`copy src url ${postInfo.preview.copyUrl}`))
+                        .styleAttr("color: rgba(255, 255, 255, 0.8);")
+                )
             ]).styleAttr(`
                 flex-direction: column;
                 margin-top: 10px;
@@ -332,26 +340,6 @@ class PreviewThumbnail extends Div {
         window.removeEventListener("mousemove", this.OnMouseMove);
         window.removeEventListener("mouseup", this.OnMouseUp);
     }
-
-    /**
-     * Modern browsers can download files that aren't from same origin this is a workaround to download a remote file
-     * @param `url` Remote URL for the file to be downloaded
-     */
-    Download = ({ url, filename }) => {
-        fetch(url)
-            .then(response => response.blob())
-            .then(blob => {
-                const blobURL = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = blobURL;
-                a.style = "display: none";
-
-                if (filename && filename.length) a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-            })
-            .catch((e) => console.error(e));
-    }
 }
 
 // class ThumbnailAnchor extends Anchor {
@@ -396,12 +384,21 @@ class PreviewThumbnail extends Div {
 //     }
 // }
 
+// TODO: If you click and drag on TextAnchor when you release the mouse it will open the link.
+// I should make a SrollDrag base class or something that implements OnMouseDown, move, up functions and
+// share it with textanchor and previewthumbnail.
 class TextAnchor extends Anchor {
     constructor(postInfo) {
         super();
         this.href(postInfo.url)
         this.setTarget("_blank")
         this.addClass("text-anchor");
-        this.addChild(flex().addChild(span(postInfo.title).styleAttr("text-align: center;")));
+        this.addChild(
+            flex().children([
+                flex().addChild(span(postInfo.title).styleAttr("font-size: 1.8rem; text-align: center;")),
+                flex().addChild(span(postInfo.dateCreated.toLocaleDateString() + " " + postInfo.dateCreated.toLocaleTimeString())),
+                flex().addChild(span(postInfo.postHint))
+            ]).styleAttr("flex-direction: column;")
+        );
     }
 }

@@ -199,3 +199,24 @@ export function randBetween(min,max) {
     const value = Math.random() * delta;
     return min + value;
 }
+
+/**
+     * Modern browsers can download files that aren't from same origin this is a workaround to download a remote file
+     * @param `url` Remote URL for the file to be downloaded
+     */
+export function download(url, filename) {
+    fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+            const blobURL = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = blobURL;
+            a.style = "display: none";
+
+            if (filename && filename.length) a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        })
+        .catch((e) => console.error("Download error:", e));
+}
