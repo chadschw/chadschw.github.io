@@ -208,17 +208,18 @@ class Preview {
         this.id = images.id;
         this.previewImgs = images.resolutions.map(res => new PreviewImg(res));
         this.source = new PreviewImg(images.source);
-        this.downloadUrl = this.MakeDownloadUrl();
-        this.copyUrl = this.MakeDownloadUrl().split("?")[0];
+        //this.downloadUrl = this.MakeDownloadUrl();
+        this.copyUrl = this.source.url;
         this.downloadFilename = this.MakeDownloadFilename();
     }
 
-    MakeDownloadUrl() {
-        return this.source.url
-            .replace("preview", "i")
-            .replace("external-i", "i")
-            .replace("external-preview", "i");
-    }
+    // MakeDownloadUrl() {
+    //     // TODO: Why can't i download from preview.redd.it...?
+    //     return this.source.url
+    //         .replace("https://preview", "https://i");
+    //     //     .replace("external-i", "i")
+    //     //     .replace("external-preview", "i");
+    // }
 
     MakeDownloadFilename() {
         const url = this.source.url;
@@ -276,18 +277,18 @@ class PreviewThumbnail extends Div {
                         .styleAttr("color: rgba(255, 255, 255, 0.8);")
                         .setTarget("_blank")
                 ),
-                div().addChild(
-                    anchor()
-                        .setOnClick((e) => download(postInfo.preview.downloadUrl, postInfo.preview.downloadFilename))
-                        .href("#")
-                        .addChild(span(`download ${postInfo.preview.downloadFilename}`))
-                        .styleAttr("color: rgba(255, 255, 255, 0.8);")
-                ),
+                // div().addChild(
+                //     anchor()
+                //         .setOnClick((e) => download(postInfo.preview.downloadUrl, postInfo.preview.downloadFilename))
+                //         .href("#")
+                //         .addChild(span(`download ${postInfo.preview.downloadFilename}`))
+                //         .styleAttr("color: rgba(255, 255, 255, 0.8);")
+                // ),
                 div().addChild(
                     anchor()
                         .setOnClick((e) => navigator.clipboard.writeText(postInfo.preview.copyUrl))
                         .href("#")
-                        .addChild(span(`copy src url ${postInfo.preview.copyUrl}`))
+                        .addChild(span(`copy image address`))
                         .styleAttr("color: rgba(255, 255, 255, 0.8);")
                 )
             ]).styleAttr(`
