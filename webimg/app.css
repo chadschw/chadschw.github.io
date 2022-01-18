@@ -1,0 +1,49 @@
+
+body {
+    background-color: #1e1e1e;
+    overflow: hidden;
+    font-size: 62.5%;
+}
+
+.axis-ele {
+    z-index: 0;
+    background-color: #1e1e1e;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.axis-veil-ele {
+    display:block;
+    z-index: 6;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+img {
+    z-index: 1;
+}
+
+video {
+    z-index: 1;
+}
+
+div.controls {
+    background-color: gray;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 10;
+}
