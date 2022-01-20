@@ -109,9 +109,15 @@ class Posts extends Flex {
         super();
         this.addClass("posts");
 
+
+        this.scrollLeftFloat = 0;
+        this.scrollLeftVel = 0;
+        this.scrollFriction = 0.94;
+        this.scrollStopVel = 0.05;
+
         this.target.onwheel = (e) => {
             // this causes a jump.
-            this.target.scrollLeft += e.deltaY;
+            //this.target.scrollLeft += e.deltaY;
 
             // this scrolls smoothly, but if you mouse wheel quickly it is janky because a new event cancels the previous animation...
             // this.target.scrollBy({
@@ -119,6 +125,27 @@ class Posts extends Flex {
             //     left: e.deltaY * 3,
             //     behavior: "smooth"
             // });
+
+            // This works well:
+            // Mouse down bumps scroll velocity. Friction slows down the scrolling.
+
+            // If scrolling up (to the left) and we're already all the way to the left or
+            // scrolling down (to the right) and we're already all the way to the right
+            // return.
+            if (e.deltaY < 0 && this.target.scrollLeft === 0 || 
+                e.deltaY > 0 && this.target.scrollLeft === this.target.scrollWidth) {
+                return;
+            }
+
+            const oldVel = this.scrollLeftVel;
+            this.scrollLeftVel += e.deltaY/2;
+
+            // If we are stationary, start animating, else we are already animating.
+            if (oldVel === 0) {
+                this.scrollLeftFloat = this.target.scrollLeft;
+                this.AnimateScroll();
+            }
+            
             e.preventDefault();
         }
 
@@ -126,6 +153,20 @@ class Posts extends Flex {
             this.mousedown = true;
             window.addEventListener("mousemove", this.OnMouseMove);
             window.addEventListener("mouseup", this.OnMouseUp);
+        }
+    }
+
+    AnimateScroll = (e) => {
+        this.scrollLeftFloat += this.scrollLeftVel;
+        this.target.scrollLeft = Math.round(this.scrollLeftFloat);
+        this.scrollLeftVel *= this.scrollFriction;
+        //console.log(this.scrollLeftVel);
+        console.log(this.scrollLeftFloat);
+
+        if (Math.abs(this.scrollLeftVel) < this.scrollStopVel) {
+            this.scrollLeftVel = 0;
+        } else {
+            requestAnimationFrame(this.AnimateScroll)
         }
     }
 
