@@ -169,18 +169,10 @@ class ThumbnailAnchor {
     constructor(postInfo) {
         const div = document.createElement("div");
         div.classList.add("thumbnail-anchor");
-        //div.style.background = `url("${postInfo.url}")`; // Note: the url is the full size photo which can be a couple MB big. Good thing I have gigabit speed.
         div.style.background = `url("${postInfo.thumbnail}")`;
         div.style.backgroundPosition = "center";
         div.style.backgroundSize = "cover";
         
-        // const title = document.createElement("div");
-        // //title.innerHTML = postInfo.title;
-        // title.innerHTML = `${postInfo.dateCreated.toLocaleString()} downs: ${postInfo.downs} ups: ${postInfo.ups}<br>${postInfo.title}`;
-        // title.classList.add("thumbnail-title");
-        
-        // div.appendChild(title);
-
         this.target = document.createElement("a");
         this.target.href = postInfo.url;
         this.target.target = "_blank";
@@ -192,17 +184,5 @@ class ThumbnailAnchor {
                 console.log(response);
             });
         }
-    }
-}
-
-class TextAnchor {
-    constructor(postInfo) {
-        const title = document.createElement("span");
-        title.textContent = postInfo.title;
-
-        this.target = document.createElement("a");
-        this.target.href = postInfo.url;
-        this.target.textContent = postInfo.title;
-        this.target.target = "_blank";
     }
 }
