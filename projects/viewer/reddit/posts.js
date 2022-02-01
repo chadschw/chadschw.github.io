@@ -1,6 +1,6 @@
 import { Anchor, Div, flex, Flex, span } from "../../../lib/ele/ele.js";
 import { PostInfo } from "./postinfo.js";
-import { PreviewThumbnail } from "./previewthumbnail.js";
+import { PreviewImageView } from "./previewimageview.js";
 import { PreviewVideoView } from "./preview.js";
 
 export class Posts extends Flex {
@@ -95,7 +95,7 @@ class PostView extends Div
         super();
         
         if (postInfo.preview) {
-            this.addChild(new PreviewThumbnail(postInfo, previewSize));
+            this.addChild(new PreviewImageView(postInfo, previewSize));
         }
         else if (postInfo.previewVideo) {
             this.addChild(new PreviewVideoView(postInfo, previewSize));

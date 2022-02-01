@@ -1,11 +1,11 @@
 import { Div, img } from "../../../lib/ele/ele.js";
 import { PostInfoView } from "./postinfoview.js";
 
-export class PreviewThumbnail extends Div {
+export class PreviewImageView extends Div {
     constructor(postInfo, previewSize) {
         super();
         this.postInfo = postInfo;
-        this.addClass("thumbnail-anchor");
+        this.addClass("preview-image-view");
         this.mousemoved = false;
         this.children([
             img()

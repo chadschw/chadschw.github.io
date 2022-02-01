@@ -22,7 +22,7 @@ input {
     outline: 0px;
     padding: 5px;
     text-align: center;
-    width: 200px;
+    width: 100px;
 }
 
 button {
@@ -52,6 +52,19 @@ button:active {
     width: 100%;
 }
 
+.header-2 {
+    background-color: #202020;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    box-shadow: 0px 0px 13px 3px black;
+    cursor: pointer;
+    height: 100%;
+    position: absolute;
+    right: -150px;
+    z-index: 1;
+    transition: right 0.5s ease 0s;
+}
+
 .posts {
     gap: 10px;
     justify-content: flex-start;
@@ -60,15 +73,28 @@ button:active {
     width: 100%;
 }
 
-.thumbnail-anchor {
-    margin: 10px;
+.preview-image-view {
+    margin: 
+    10px;
 }
 
-.thumbnail-anchor > img {
-    border: 1px solid black;
+.preview-image-view > img {
+    border: 3px solid black;
     border-radius: 10px;
-    box-shadow: 0px 0px 13px 3px black;
+    box-shadow: 0px 0px 13px 0px black;
     cursor: pointer;
+    transition: box-shadow 0.25s ease 0s;
+    z-index: 0;
+}
+
+.preview-image-view > img:hover {
+    box-shadow: 0px 0px 23px 0px black;
+}
+
+.preview-video-view > video {
+    border: 3px solid black;
+    border-radius: 10px;
+    box-shadow: 0px 0px 13px 0px black;
 }
 
 .text-anchor {

@@ -58,6 +58,7 @@ export class PreviewVideoView extends Flex {
         this.styleAttr(`
             flex-direction: column;
         `);
+        this.addClass("preview-video-view");
 
         this.videoEle = new Video()
             .src(postInfo.previewVideo.url)
