@@ -244,20 +244,28 @@ class Circle extends Div {
         this._opacity = 1;
         this.ttl = Math.floor(ttl);
         this._opacityStep = 1 / this.ttl;
+        this._radius = radius;
+        this._radiusStep = radius / this.ttl;
         const diameter = radius * 2;
         this._xVel = randBetween(-maxVel, maxVel);
         this._yVel = randBetween(-maxVel, maxVel);
         this.staticStyle = `
-            width: ${diameter}px;
-            height: ${diameter}px;
-            border-radius: ${radius}px;
             background-color: ${randomColor()};
             position: absolute;
         `;
         this.SetStyle();
     }
     SetStyle() {
-        this.styleAttr(this.staticStyle + `left: ${this._x}px; top: ${this._y}px; opacity: ${this._opacity};`);
+        const diameter = this._radius * 2;
+        const changedStyle = `
+            width: ${diameter}px;
+            height: ${diameter}px;
+            border-radius: ${this._radius}px;
+            left: ${this._x}px; 
+            top: ${this._y}px; 
+            opacity: ${this._opacity};
+        `;
+        this.styleAttr(this.staticStyle + changedStyle);
     }
     Move() {
         this._x += this._xVel;
@@ -265,15 +273,29 @@ class Circle extends Div {
         this._y += this._yVel;
         this._yVel += this._yAcc;
         this._opacity -= this._opacityStep;
+        this._radius -= this._radiusStep;
         this.SetStyle();
     }
 }
+const minRadius = 2;
+const maxRadius = 5;
+const minTtl = 100;
+const maxTtl = 300;
+const minAdd = 1;
+const maxAdd = 3;
+const maxVel = 2;
+const xAcc = 0.0;
+const yAcc = 0.05;
 let mouseX = 0;
 let mouseY = 0;
 let circles = [];
 window.onmousemove = e => {
     mouseX = e.clientX;
     mouseY = e.clientY;
+};
+window.ontouchmove = e => {
+    mouseX = e.touches[0].clientX;
+    mouseY = e.touches[0].clientY;
 };
 let mouseDown = false;
 window.onmousedown = e => mouseDown = true;
@@ -282,9 +304,9 @@ window.ontouchstart = e => mouseDown = true;
 window.ontouchend = e => mouseDown = false;
 function AddCircles(num) {
     for (let i = 0; i < num; i++) {
-        const radius = randBetween(2, 5);
-        const ttl = randBetween(50, 100);
-        const circle = new Circle(mouseX - radius, mouseY - radius, radius, ttl);
+        const radius = randBetween(minRadius, maxRadius);
+        const ttl = randBetween(minTtl, maxTtl);
+        const circle = new Circle(mouseX - radius, mouseY - radius, radius, ttl, maxVel, xAcc, yAcc);
         circles.push(circle);
         document.body.appendChild(circle.target);
     }
@@ -304,7 +326,7 @@ function Render() {
     });
     if (mouseDown) {
         //if (circles.length < 200) {
-        AddCircles(randBetween(1, 5));
+        AddCircles(randBetween(minAdd, maxAdd));
         //}
     }
     requestAnimationFrame(Render);

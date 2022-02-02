@@ -1,51 +1,16 @@
-class Circle extends Div {
-    public ttl: number;
-    private staticStyle: string;
-    private _xVel: number; 
-    private _yVel: number;
-    private _opacity = 1;
-    private _opacityStep: number;
-    
-    constructor(
-        private _x: number, 
-        private _y: number, 
-        radius: number, 
-        ttl: number = 100,
-        maxVel = 3,
-        private _xAcc = 0.0,
-        private _yAcc = 0.01
-        ) {
-        super();
-        this.ttl = Math.floor(ttl);
-        this._opacityStep = 1/this.ttl;
-        const diameter = radius * 2;
-        this._xVel = randBetween(-maxVel, maxVel);
-        this._yVel = randBetween(-maxVel, maxVel);
 
-        this.staticStyle = `
-            width: ${diameter}px;
-            height: ${diameter}px;
-            border-radius: ${radius}px;
-            background-color: ${randomColor()};
-            position: absolute;
-        `;
+const minRadius = 2;
+const maxRadius = 5;
 
-        this.SetStyle();
-    }
+const minTtl = 100;
+const maxTtl = 300;
 
-    SetStyle() {
-        this.styleAttr(this.staticStyle + `left: ${this._x}px; top: ${this._y}px; opacity: ${this._opacity};`);
-    }
+const minAdd = 1;
+const maxAdd = 3;
 
-    Move() {
-        this._x += this._xVel;
-        this._xVel += this._xAcc;
-        this._y += this._yVel;
-        this._yVel += this._yAcc;
-        this._opacity -= this._opacityStep;
-        this.SetStyle();
-    }
-}
+const maxVel = 2;
+const xAcc = 0.0;
+const yAcc = 0.05; 
 
 let mouseX = 0;
 let mouseY = 0;
@@ -57,6 +22,11 @@ window.onmousemove = e => {
     mouseY = e.clientY;
 }
 
+window.ontouchmove = e => {
+    mouseX = e.touches[0].clientX;
+    mouseY = e.touches[0].clientY;
+}
+
 let mouseDown = false;
 window.onmousedown = e => mouseDown = true;
 window.onmouseup = e => mouseDown = false;
@@ -65,9 +35,9 @@ window.ontouchend = e => mouseDown = false;
 
 function AddCircles(num: number) {
     for (let i = 0; i < num; i++) {
-        const radius = randBetween(2, 5);
-        const ttl = randBetween(50, 100)
-        const circle = new Circle(mouseX - radius, mouseY - radius, radius, ttl);
+        const radius = randBetween(minRadius, maxRadius);
+        const ttl = randBetween(minTtl, maxTtl)
+        const circle = new Circle(mouseX - radius, mouseY - radius, radius, ttl, maxVel, xAcc, yAcc);
         circles.push(circle);
         document.body.appendChild(circle.target);
     }
@@ -92,7 +62,7 @@ function Render() {
 
     if (mouseDown) {
         //if (circles.length < 200) {
-            AddCircles(randBetween(1, 5));
+            AddCircles(randBetween(minAdd, maxAdd));
         //}
     }
     

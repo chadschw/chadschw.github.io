@@ -1,7 +1,8 @@
 {
   "include": [
     "../../libts/ele/*.ts",
-    "src/*.ts"
+    "src/circle.ts",
+    "src/app.ts"
   ],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
