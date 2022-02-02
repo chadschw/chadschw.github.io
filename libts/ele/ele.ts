@@ -231,6 +231,10 @@ function randBetween(min: number, max: number) {
     return min + value;
 }
 
+function randomColor(alpha: number = 1) {
+    return `rgba(${randBetween(0, 256)}, ${randBetween(0, 256)}, ${randBetween(0, 256)}, ${alpha})`;
+}
+
 /**
      * Modern browsers can download files that aren't from same origin this is a workaround to download a remote file
      * @param `url` Remote URL for the file to be downloaded
