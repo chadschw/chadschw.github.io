@@ -60,6 +60,8 @@ window.onmousemove = e => {
 let mouseDown = false;
 window.onmousedown = e => mouseDown = true;
 window.onmouseup = e => mouseDown = false;
+window.ontouchstart = e => mouseDown = true;
+window.ontouchend = e => mouseDown = false;
 
 function AddCircles(num: number) {
     for (let i = 0; i < num; i++) {
