@@ -1,0 +1,19 @@
+
+* {
+    user-select: none;
+}
+
+html {
+    font-size: 62.5%;
+    font-family: DM Sans;
+}
+
+html, body {
+    height: 100%;
+    margin: 0px;
+}
+
+body {
+    background-image: radial-gradient(var(--shade-1), var(--shade-2), var(--shade-3));
+    font-size: 1.2rem;
+}
