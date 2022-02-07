@@ -51,6 +51,10 @@
     opacity: 1;
 }
 
+.clock {
+    flex-direction: column;
+}
+
 .context-menu {
     background-color: var(--background-color);
     border-radius: var(--border-radius);

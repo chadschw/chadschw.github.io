@@ -257,6 +257,38 @@ function download(url: string, filename: string) {
         .catch((e) => console.error("Download error:", e));
 }
 
+function ShortMonthName(d: Date): string { return new Intl.DateTimeFormat("en-US", { month: "short" }).format(d); }
+
+function TwoDigit(x: number, locale: string = "en-us"): string {
+    return x.toLocaleString(locale, { minimumIntegerDigits: 2});
+}
+
+function hhmm(d: Date): string { return TwoDigit(d.getHours()) + ":" + TwoDigit(d.getMinutes()) };
+
+class Clock extends Flex {
+    private _timeSpan: Span;
+    private _dateSpan: Span;
+
+    constructor() {
+        super();
+        this.classes(["clock"]);
+        
+        this._timeSpan = span().styleAttr("font-size: 2.2rem") as Span;
+        this._dateSpan = span();
+
+        this.children([
+            div().addChild(this._timeSpan),
+            div().addChild(this._dateSpan)
+        ])
+
+        setInterval(() => {
+            const d = new Date();
+            this._timeSpan.textContent(hhmm(d))
+            this._dateSpan.textContent(`${d.getDate()} ${ShortMonthName(d)} ${d.getFullYear()}`)
+        }, 1000)
+    }
+}
+
 class StatesButton extends Button {
     private _buttonSpan: Span;
 
