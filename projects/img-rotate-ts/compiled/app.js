@@ -342,140 +342,87 @@ class ContextMenu extends Div {
 function contextMenu(ele, items) {
     return new ContextMenu(ele, items);
 }
-class Subreddit {
-    //private _lastAfter: string = "";
-    constructor(_onUrls) {
-        this._onUrls = _onUrls;
-    }
-    OnGetPosts(subreddit) {
-        if (subreddit.length === 0) {
-            return;
-        }
-        let params = [subreddit, "hot"];
-        if (subreddit.includes(":")) {
-            params = subreddit.split(":");
-        }
-        let url = `https://www.reddit.com/r/${params[0]}/${params[1]}.json?limit=64`;
-        // if (this._lastAfter.length > 0) {
-        //     url += `&after=${this._lastAfter}`;
-        // }
-        if (url && url.length > 0) {
-            console.debug(`Request url: ${url}`);
-            fetch(url).then(r => r.json()).then(this.OnGotPosts.bind(this)).catch(reason => console.error(reason));
-        }
-    }
-    OnGotPosts(listing) {
-        console.log("got", listing);
-        const posts = listing.data.children;
-        this.OnGotImgPosts(posts.filter(post => post.data.post_hint === "image"));
-    }
-    OnGotImgPosts(posts) {
-        const previewUrls = posts.map(post => {
-            const url = this.LargestPreviewUrl(post.data.preview.images[0].resolutions);
-            return this.CleanUrl(url);
-        });
-        this._onUrls(previewUrls);
-    }
-    LargestPreviewUrl(resolutions) {
-        return resolutions[resolutions.length - 1].url;
-    }
-    CleanUrl(dirty) {
-        return dirty.replaceAll("&amp;", "&");
-    }
-}
-async function GetListing(subredditName, lastAfter = "") {
-    if (subredditName.length === 0) {
-        return null;
-    }
-    let params = [subredditName, "hot"];
-    if (subredditName.includes(":")) {
-        params = subredditName.split(":");
-    }
-    let url = `https://www.reddit.com/r/${params[0]}/${params[1]}.json?limit=64`;
-    if (lastAfter.length > 0) {
-        url += `&after=${lastAfter}`;
-    }
-    console.debug(`Request url: ${url}`);
-    //fetch(url).then(r => r.json()).then(this.OnGotPosts.bind(this)).catch(reason => console.error(reason));
-    let response = await fetch(url);
-    let listing = await response.json();
-    return listing;
-}
-class Previewer extends Flex {
-    constructor() {
-        super();
-        this._urlIdx = 0;
-        this._urls = [];
-        this.styleAttr(`
-            height: 90%; 
-            width: 90%; 
-        `);
-        this._img = img().styleAttr(`
-            box-shadow: 0px 0px 3px 3px var(--shade-3);
-            border: 16px solid white;
-            border-radius: 30px;
-            max-height: 100%;
-            max-width: 100%;
-        `);
-        this.addChild(this._img);
-    }
-    AddPreviews(urls) {
-        // just always reset for now...
-        // this._urls = this._urls.concat(urls);
-        // if (this._urlIdx === 0) {
-        //     this._img.src(urls[0]);
-        // }
-        this._urlIdx = 0;
-        this._urls = urls;
-        this._img.src(urls[0]);
-    }
-    Clear() {
-        this._urls = [];
-        this._img.src("");
-    }
-    OnWheel(e) {
-        e.preventDefault();
-        if (e.deltaY > 0) {
-            if (this._urlIdx < this._urls.length - 1) {
-                this._urlIdx++;
-                this._img.src(this._urls[this._urlIdx]);
-            }
-        }
-        else if (this._urlIdx > 0) {
-            this._urlIdx--;
-            this._img.src(this._urls[this._urlIdx]);
-        }
-    }
-}
-/// <reference path="reddit.ts" />
-/// <reference path="previewer.ts" />
-const previewer = new Previewer();
-const defaultSubreddit = "earthporn:new";
-async function GetPosts(subreddit) {
-    new Subreddit(previewer.AddPreviews.bind(previewer)).OnGetPosts(subreddit);
-    // const listing = await GetListing(subreddit)
-    // console.debug(listing?.data.after);
-}
-document.body.addEventListener("wheel", e => { previewer.OnWheel(e); }, { passive: false });
-GetPosts(defaultSubreddit);
-class SubredditInput {
-    constructor(initialString, _onNewSubreddit) {
-        this._onNewSubreddit = _onNewSubreddit;
+class MyTextInput {
+    constructor(initialString) {
         this._textInput = textInput(initialString)
-            .onenter(this.OnEnter.bind(this));
+            .onenter(this.OnEnter.bind(this))
+            .styleAttr(`
+                
+            `);
         this.Item = new TextInputContextMenuItem(this._textInput);
     }
     OnEnter(e) {
-        this._onNewSubreddit(this._textInput.value);
+        alert(`You entered: ${this._textInput.value}`);
+    }
+}
+class MouseClickAndDrag {
+    constructor(ele, _onDrag) {
+        this._onDrag = _onDrag;
+        ele.target.addEventListener("mousedown", e => {
+            e.preventDefault();
+            const boundDrag = this._onDrag.bind(ele);
+            window.addEventListener("mousemove", boundDrag);
+            window.addEventListener("mouseup", e => window.removeEventListener("mousemove", boundDrag));
+        });
+    }
+}
+class Cube extends Flex {
+    constructor(_xPos = 0, _yPos = 0) {
+        super();
+        this._xPos = _xPos;
+        this._yPos = _yPos;
+        this._xRot = 0;
+        this._yRot = 0;
+        this.classes(["cube"]);
+        this.children([
+            flex().addChild(span().textContent("back")).classes(["cube-face", "cube-back"]),
+            flex().addChild(span().textContent("front is the fun place to be! Do you know any good jokes?")).classes(["cube-face", "cube-front"]),
+            flex().addChild(span().textContent("left")).classes(["cube-face", "cube-left"]),
+            flex().addChild(span().textContent("right " + hhmm(new Date()))).classes(["cube-face", "cube-right"]),
+            flex().addChild(span().textContent("top")).classes(["cube-face", "cube-top"]),
+            flex().addChild(span().textContent("bottom")).classes(["cube-face", "cube-bottom"])
+            // flex().addChild(
+            //     img()
+            //         .src("")
+            //         .setAttr("height", "200px")
+            //     ).classes(["cube-face", "cube-bottom"])
+        ]);
+        this.setStyle();
+        new MouseClickAndDrag(this, this.OnDrag);
+    }
+    OnDrag(e) {
+        this._xPos += e.movementX / 2;
+        this._yPos += e.movementY / 2;
+        this._xRot += -e.movementY / 2;
+        this._yRot += e.movementX / 2;
+        this.setStyle();
+    }
+    setStyle() {
+        this.target.style.transform = `
+            perspective(var(--perspective)) 
+            translateX(${this._xPos}px)
+            translateY(${this._yPos}px)
+            rotateX(${this._xRot}deg) 
+            rotateY(${this._yRot}deg)
+        `;
     }
 }
 page().children([
-    flex().addChild(previewer).styleAttr("height: 100%; width: 100%"),
-    new Clock().styleAttr("position: absolute; top: 5px; left: 5px; color: var(--foreground-color);"),
+    flex().children([
+        new Cube(),
+        new Cube(400, 0),
+        new Cube(-400, 0),
+        new Cube(0, 400),
+        new Cube(0, -400),
+    ]).styleAttr(`
+        flex-direction: column;
+        height: 100%; 
+        width: 100%;
+    `),
     contextMenu(document.body, [
         new TextContextMenuItem("Theme", Theme.Toggle),
-        new TextContextMenuItem("Clear", () => previewer.Clear()),
-        new SubredditInput(defaultSubreddit, (newSubreddit) => GetPosts(newSubreddit)).Item
+        new TextContextMenuItem("Something Else", () => alert("Hi")),
+        new MyTextInput("yo yo").Item
     ])
 ]);
 //# sourceMappingURL=app.js.map

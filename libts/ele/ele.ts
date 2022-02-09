@@ -263,7 +263,7 @@ function TwoDigit(x: number, locale: string = "en-us"): string {
     return x.toLocaleString(locale, { minimumIntegerDigits: 2});
 }
 
-function hhmm(d: Date): string { return TwoDigit(d.getHours()) + ":" + TwoDigit(d.getMinutes()) };
+function hhmm(d: Date): string { return d.getHours() + ":" + TwoDigit(d.getMinutes()) };
 
 class Clock extends Flex {
     private _timeSpan: Span;

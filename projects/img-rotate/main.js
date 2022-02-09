@@ -37,7 +37,9 @@ window.onmousemove = e => {
     
     rot.style.transform = `
         perspective(75em)
+        translate3d(0px, 0px, -1500px)
         rotateX(${xRot}deg)
         rotateY(${yRot}deg)
+        translate3d(0px, 0px, 1000px)
     `;
 }

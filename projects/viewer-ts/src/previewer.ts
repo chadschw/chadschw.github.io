@@ -11,7 +11,9 @@ class Previewer extends Flex {
             width: 90%; 
         `);
         this._img = img().styleAttr(`
-            box-shadow: var(--box-shadow);
+            box-shadow: 0px 0px 3px 3px var(--shade-3);
+            border: 16px solid white;
+            border-radius: 30px;
             max-height: 100%;
             max-width: 100%;
         `) as Img;

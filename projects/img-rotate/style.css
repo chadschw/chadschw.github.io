@@ -30,8 +30,8 @@ body {
 
 .img {
     /* Background image and position. */
-    /* background: url('./img/blue-spike.jpg'); */
-    background: url('./img/devils-bridge.jpg');
+    background: url('./img/blue-spike.jpg');
+    /* background: url('./img/devils-bridge.jpg'); */
 
     background-size: cover;
     background-position-x: center;
@@ -93,6 +93,7 @@ body {
 .rotate {
     background: url('./img/blue-spike.jpg');
     /* background: url('./img/devils-bridge.jpg'); */
+    
     
     background-size: cover;
     background-position-x: center;
