@@ -141,3 +141,59 @@ async function GetListing(subredditName: string, lastAfter = ""): Promise<Listin
     let listing = await response.json() as Listing;
     return listing;
 }
+
+class ListingVM {
+    public ImagePosts: ImagePostVM[];
+    public VideoPosts: VideoPostVM[];
+    constructor(public Listing: Listing) {
+        this.ImagePosts = this.Listing.data.children.filter(entry => entry.data.post_hint === "image").map(imagePost => new ImagePostVM(imagePost.data));
+        this.VideoPosts = this.Listing.data.children.filter(entry => entry.data.post_hint === "rich:video").map(videoPost => new VideoPostVM(videoPost.data));
+    }
+}
+
+class PostVM {
+    constructor(public PostData: PostData) {
+        
+    }
+
+    public CleanUrl(dirty: string): string {
+        return dirty.replaceAll("&amp;", "&");
+    }
+}
+
+class ImagePostVM extends PostVM {
+    constructor(postData: PostData) {
+        super(postData);
+    }
+
+    public LargestPreviewUrl() {
+        if (this.PostData.preview.enabled) {
+            const resolutions = this.PostData.preview.images[0].resolutions;
+            return this.CleanUrl(resolutions[resolutions.length-1].url);
+        } else {
+            return "";
+        }
+    }
+
+    public SourceUrl() {
+        if (this.PostData.preview.enabled) {
+            return this.CleanUrl(this.PostData.preview.images[0].source.url);
+        } else {
+            return "";
+        }
+    }
+
+    public SourceSize() {
+        return `${this.PostData.preview.images[0].source.width}x${this.PostData.preview.images[0].source.height}`;
+    }
+
+    public Permalink() {
+        return "https://www.reddit.com" + this.PostData.permalink;
+    }
+}
+
+class VideoPostVM {
+    constructor(public PostData: PostData) {
+
+    }
+}

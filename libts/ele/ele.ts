@@ -396,6 +396,7 @@ class ContextMenu extends Div {
 
     OnContextMenu(e: MouseEvent) {
         e.preventDefault();
+        e.stopPropagation();
 
         if (this.target.style.display === "block") {
             this.target.style.display = "none";

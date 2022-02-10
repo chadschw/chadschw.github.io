@@ -5,9 +5,11 @@ const previewer = new Previewer();
 const defaultSubreddit = "earthporn:new";
 
 async function GetPosts(subreddit: string) {
-    new Subreddit(previewer.AddPreviews.bind(previewer)).OnGetPosts(subreddit);
-    // const listing = await GetListing(subreddit)
-    // console.debug(listing?.data.after);
+    const listing = await GetListing(subreddit)
+    console.debug(listing?.data.after);
+    if (listing) {
+        previewer.AddListing(new ListingVM(listing));
+    }
 }
 
 document.body.addEventListener("wheel", e => { previewer.OnWheel(e); }, { passive: false });
