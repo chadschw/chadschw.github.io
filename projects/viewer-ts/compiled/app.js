@@ -221,6 +221,7 @@ function TwoDigit(x, locale = "en-us") {
 }
 function hhmm(d) { return d.getHours() + ":" + TwoDigit(d.getMinutes()); }
 ;
+function dayMonthYear(d) { return `${d.getDate()} ${ShortMonthName(d)} ${d.getFullYear()}`; }
 class Clock extends Flex {
     constructor() {
         super();
@@ -234,7 +235,7 @@ class Clock extends Flex {
         setInterval(() => {
             const d = new Date();
             this._timeSpan.textContent(hhmm(d));
-            this._dateSpan.textContent(`${d.getDate()} ${ShortMonthName(d)} ${d.getFullYear()}`);
+            this._dateSpan.textContent(dayMonthYear(d));
         }, 1000);
     }
 }
@@ -302,10 +303,20 @@ function themeToggleButton() {
     return new ThemeToggleButton();
 }
 class ContextMenuItem extends Div {
-    constructor(onClick) {
+    constructor(onClick, closeAfterClick = true) {
         super();
         this.onClick = onClick;
-        this.setOnClick(onClick);
+        if (closeAfterClick) {
+            this.setOnClick((e) => {
+                onClick();
+                if (this.target.parentElement) {
+                    this.target.parentElement.style.display = "none";
+                }
+            });
+        }
+        else {
+            this.setOnClick(onClick);
+        }
         this.classes(["context-menu-item"]);
     }
 }
@@ -319,6 +330,8 @@ class TextInputContextMenuItem extends ContextMenuItem {
     constructor(textInput) {
         super(() => { });
         this.addChild(textInput);
+        textInput.setOnClick(e => textInput.target.select());
+        this.setOnClick(e => e.stopPropagation());
     }
 }
 class ContextMenu extends Div {
@@ -416,6 +429,13 @@ class PostVM {
     CleanUrl(dirty) {
         return dirty.replaceAll("&amp;", "&");
     }
+    CreatedDateTime() {
+        var date = new Date(this.PostData.created_utc * 1000);
+        return dayMonthYear(date) + " " + hhmm(date);
+    }
+    Url() {
+        return this.CleanUrl(this.PostData.url);
+    }
 }
 class ImagePostVM extends PostVM {
     constructor(postData) {
@@ -476,17 +496,21 @@ class Previewer extends Flex {
                     else {
                         this._previewImgInfoVM.target.style.visibility = "hidden";
                     }
-                })
+                }),
+                new TextContextMenuItem("Source", () => window.open(this._activePost?.SourceUrl(), "_blank")),
+                new TextContextMenuItem("Url", () => window.open(this._activePost?.Url(), "_blank")),
+                new TextContextMenuItem("Permalink", () => window.open(this._activePost?.Permalink(), "_blank")),
+                new TextContextMenuItem("Search Reddit", () => window.open(`https://www.reddit.com/search/?q=${this._activePost?.PostData.title}`)),
+                new TextContextMenuItem("Search Google", () => window.open(`https://www.google.com/search?q=${this._activePost?.PostData.title}`))
             ])
         ]);
     }
     AddListing(listing) {
-        // just always reset for now... Future: append
-        this._postIdx = 0;
-        this._imgPosts = listing.ImagePosts;
+        this._imgPosts = this._imgPosts.concat(listing.ImagePosts);
         this.SetActivePost();
     }
     Clear() {
+        this._postIdx = 0;
         this._imgPosts = [];
         this._img.Clear();
         this._previewImgInfoVM.Clear();
@@ -507,7 +531,7 @@ class Previewer extends Flex {
     SetActivePost() {
         this._activePost = this._imgPosts[this._postIdx];
         this._img.src(this._activePost.LargestPreviewUrl());
-        this._previewImgInfoVM.Update(this._activePost);
+        this._previewImgInfoVM.Update(this._activePost, this._postIdx + 1, this._imgPosts.length);
     }
 }
 class PreviewImg extends Img {
@@ -521,9 +545,6 @@ class PreviewImg extends Img {
             max-width: 100%;
         `);
     }
-    setPost(postVM) {
-        this.src(postVM.LargestPreviewUrl());
-    }
     Clear() {
         this.src("");
     }
@@ -533,9 +554,8 @@ class PreviewImgInfoVm extends Flex {
         super();
         this._title = span().styleAttr("user-select: text;");
         this._size = span();
-        this._sourceLink = anchor().addChild(span().textContent("source")).setAttr("target", "_blank").styleAttr("color: var(--foreground-color);");
-        this._urlLink = anchor().addChild(span().textContent("url")).setAttr("target", "_blank").styleAttr("color: var(--foreground-color);");
-        this._postLink = anchor().addChild(span().textContent("post")).setAttr("target", "_blank").styleAttr("color: var(--foreground-color);");
+        this._created = span();
+        this._position = span();
         this.styleAttr(`
             background-color: var(--background-color);
             border-radius: var(--border-radius);
@@ -552,38 +572,50 @@ class PreviewImgInfoVm extends Flex {
         this.target.style;
         this.children([
             div().addChild(this._title),
-            div().addChild(this._size),
-            flex().children([this._sourceLink, this._urlLink, this._postLink]).styleAttr("gap: 5px; wrap: nowrap;")
+            flex().children([this._size, this._created, this._position]).styleAttr("gap: 20px; wrap: nowrap;"),
         ]);
     }
-    Update(postVM) {
+    Update(postVM, num, totalNum) {
         this._title.textContent(postVM.PostData.title);
         this._size.textContent(postVM.SourceSize());
-        this._sourceLink.href(postVM.SourceUrl());
-        this._urlLink.href(postVM.PostData.url);
-        this._postLink.href(postVM.Permalink());
+        this._created.textContent(postVM.CreatedDateTime());
+        this._position.textContent(`${num} of ${totalNum}`);
     }
     Clear() {
         this._title.textContent("");
         this._size.textContent("");
-        this._sourceLink.href("https://www.google.com");
-        this._urlLink.href("https://www.google.com");
-        this._postLink.href("http://www.google.com");
+        this._created.textContent("");
+        this._position.textContent("");
     }
 }
 /// <reference path="reddit.ts" />
 /// <reference path="previewer.ts" />
+class PresentSubreddit {
+    constructor() {
+        this.Name = "";
+        this.LastAfter = "";
+        this.NumPosts = 0;
+    }
+}
+const presentSubreddit = new PresentSubreddit();
 const previewer = new Previewer();
 const defaultSubreddit = "earthporn:new";
 async function GetPosts(subreddit) {
-    const listing = await GetListing(subreddit);
-    console.debug(listing?.data.after);
+    if (presentSubreddit.Name !== subreddit) {
+        presentSubreddit.Name = subreddit;
+        presentSubreddit.LastAfter = "";
+        presentSubreddit.NumPosts = 0;
+        previewer.Clear();
+    }
+    const listing = await GetListing(subreddit, presentSubreddit.LastAfter);
     if (listing) {
         previewer.AddListing(new ListingVM(listing));
+        presentSubreddit.Name = subreddit;
+        presentSubreddit.LastAfter = listing.data.after;
+        presentSubreddit.NumPosts += listing.data.children.length;
+        console.log(presentSubreddit);
     }
 }
-document.body.addEventListener("wheel", e => { previewer.OnWheel(e); }, { passive: false });
-GetPosts(defaultSubreddit);
 class SubredditInput {
     constructor(initialString, _onNewSubreddit) {
         this._onNewSubreddit = _onNewSubreddit;
@@ -594,14 +626,37 @@ class SubredditInput {
     OnEnter(e) {
         this._onNewSubreddit(this._textInput.value);
     }
+    SetTextInputValue(text) {
+        this._textInput.value = text;
+    }
 }
+const subredditInput = new SubredditInput(defaultSubreddit, (newSubreddit) => GetPosts(newSubreddit));
+document.body.addEventListener("wheel", e => { previewer.OnWheel(e); }, { passive: false });
+document.body.onpaste = (e) => {
+    navigator.clipboard.readText().then(pastedText => {
+        GetPosts(pastedText);
+        subredditInput.SetTextInputValue(pastedText);
+    });
+};
+GetPosts(defaultSubreddit);
 page().children([
     flex().addChild(previewer).styleAttr("height: 100%; width: 100%"),
     new Clock().styleAttr("position: absolute; top: 5px; left: 5px; color: var(--foreground-color);"),
     contextMenu(document.body, [
         new TextContextMenuItem("Theme", Theme.Toggle),
-        new TextContextMenuItem("Clear", () => previewer.Clear()),
-        new SubredditInput(defaultSubreddit, (newSubreddit) => GetPosts(newSubreddit)).Item
+        new TextContextMenuItem("Clear", () => {
+            previewer.Clear();
+            subredditInput.SetTextInputValue("");
+        }),
+        subredditInput.Item,
+        new TextContextMenuItem("Load More", () => {
+            if (presentSubreddit.LastAfter == null) {
+                alert("No more posts.");
+            }
+            else {
+                GetPosts(presentSubreddit.Name);
+            }
+        })
     ])
 ]);
 //# sourceMappingURL=app.js.map

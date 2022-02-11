@@ -28,19 +28,23 @@ class Previewer extends Flex {
                     } else {
                         this._previewImgInfoVM.target.style.visibility = "hidden";
                     }
-                })
+                }),
+                new TextContextMenuItem("Source", () => window.open(this._activePost?.SourceUrl(), "_blank")),
+                new TextContextMenuItem("Url", () => window.open(this._activePost?.Url(), "_blank")),
+                new TextContextMenuItem("Permalink", () => window.open(this._activePost?.Permalink(), "_blank")),
+                new TextContextMenuItem("Search Reddit", () => window.open(`https://www.reddit.com/search/?q=${this._activePost?.PostData.title}`)),
+                new TextContextMenuItem("Search Google", () => window.open(`https://www.google.com/search?q=${this._activePost?.PostData.title}`))
             ])
         ]);
     }
 
     AddListing(listing: ListingVM) {
-        // just always reset for now... Future: append
-        this._postIdx = 0;
-        this._imgPosts = listing.ImagePosts;
+        this._imgPosts = this._imgPosts.concat(listing.ImagePosts);
         this.SetActivePost();
     }
 
     Clear() {
+        this._postIdx = 0;
         this._imgPosts = [];
         this._img.Clear();
         this._previewImgInfoVM.Clear();
@@ -64,7 +68,7 @@ class Previewer extends Flex {
     SetActivePost() {
         this._activePost = this._imgPosts[this._postIdx];
         this._img.src(this._activePost.LargestPreviewUrl());
-        this._previewImgInfoVM.Update(this._activePost);
+        this._previewImgInfoVM.Update(this._activePost, this._postIdx + 1, this._imgPosts.length);
     }
 }
 
@@ -80,10 +84,6 @@ class PreviewImg extends Img {
         `)
     }
 
-    setPost(postVM: ImagePostVM) {
-        this.src(postVM.LargestPreviewUrl())
-    }
-
     Clear() {
         this.src("");
     }
@@ -92,10 +92,9 @@ class PreviewImg extends Img {
 class PreviewImgInfoVm extends Flex {
     private _title = span().styleAttr("user-select: text;") as Span;
     private _size = span();
-    private _sourceLink = anchor().addChild(span().textContent("source")).setAttr("target", "_blank").styleAttr("color: var(--foreground-color);") as Anchor;
-    private _urlLink = anchor().addChild(span().textContent("url")).setAttr("target", "_blank").styleAttr("color: var(--foreground-color);") as Anchor;
-    private _postLink = anchor().addChild(span().textContent("post")).setAttr("target", "_blank").styleAttr("color: var(--foreground-color);") as Anchor;
-
+    private _created = span();
+    private _position = span();
+    
     constructor() {
         super();
         this.styleAttr(`
@@ -114,24 +113,21 @@ class PreviewImgInfoVm extends Flex {
         this.target.style
         this.children([
             div().addChild(this._title),
-            div().addChild(this._size),
-            flex().children([this._sourceLink, this._urlLink, this._postLink]).styleAttr("gap: 5px; wrap: nowrap;")
+            flex().children([this._size, this._created, this._position]).styleAttr("gap: 20px; wrap: nowrap;"),
         ]);
     }
 
-    Update(postVM: ImagePostVM) {
+    Update(postVM: ImagePostVM, num: number, totalNum: number) {
         this._title.textContent(postVM.PostData.title);
         this._size.textContent(postVM.SourceSize());
-        this._sourceLink.href(postVM.SourceUrl());
-        this._urlLink.href(postVM.PostData.url)
-        this._postLink.href(postVM.Permalink());
+        this._created.textContent(postVM.CreatedDateTime());
+        this._position.textContent(`${num} of ${totalNum}`)
     }
 
     Clear() {
         this._title.textContent("");
         this._size.textContent("");
-        this._sourceLink.href("https://www.google.com");
-        this._urlLink.href("https://www.google.com");
-        this._postLink.href("http://www.google.com");
+        this._created.textContent("");
+        this._position.textContent("");
     }
 }

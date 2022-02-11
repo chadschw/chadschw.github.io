@@ -159,6 +159,15 @@ class PostVM {
     public CleanUrl(dirty: string): string {
         return dirty.replaceAll("&amp;", "&");
     }
+
+    public CreatedDateTime(): string {
+        var date = new Date(this.PostData.created_utc * 1000);
+        return dayMonthYear(date) + " " + hhmm(date);
+    }
+
+    public Url() {
+        return this.CleanUrl(this.PostData.url);
+    }
 }
 
 class ImagePostVM extends PostVM {

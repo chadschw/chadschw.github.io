@@ -265,6 +265,8 @@ function TwoDigit(x: number, locale: string = "en-us"): string {
 
 function hhmm(d: Date): string { return d.getHours() + ":" + TwoDigit(d.getMinutes()) };
 
+function dayMonthYear(d: Date): string { return `${d.getDate()} ${ShortMonthName(d)} ${d.getFullYear()}`; }
+
 class Clock extends Flex {
     private _timeSpan: Span;
     private _dateSpan: Span;
@@ -284,7 +286,7 @@ class Clock extends Flex {
         setInterval(() => {
             const d = new Date();
             this._timeSpan.textContent(hhmm(d))
-            this._dateSpan.textContent(`${d.getDate()} ${ShortMonthName(d)} ${d.getFullYear()}`)
+            this._dateSpan.textContent(dayMonthYear(d))
         }, 1000)
     }
 }
@@ -365,9 +367,19 @@ function themeToggleButton() {
 }
 
 abstract class ContextMenuItem extends Div {
-    constructor(public onClick: () => void) {
+    constructor(public onClick: () => void, closeAfterClick = true) {
         super();
-        this.setOnClick(onClick);
+        if (closeAfterClick) {
+            this.setOnClick((e: Event) => {
+                onClick(); 
+                if (this.target.parentElement) {
+                    this.target.parentElement.style.display = "none";
+                }
+            });
+        } else {
+            this.setOnClick(onClick);
+        }
+        
         this.classes(["context-menu-item"]);
     }
 }
@@ -383,6 +395,8 @@ class TextInputContextMenuItem extends ContextMenuItem {
     constructor(textInput: TextInput) {
         super(() => {});
         this.addChild(textInput);
+        textInput.setOnClick(e => textInput.target.select());
+        this.setOnClick(e => e.stopPropagation());
     }
 }
 
