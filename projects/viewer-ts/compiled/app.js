@@ -646,6 +646,8 @@ page().children([
         new TextContextMenuItem("Theme", Theme.Toggle),
         new TextContextMenuItem("Clear", () => {
             previewer.Clear();
+            presentSubreddit.LastAfter = "";
+            presentSubreddit.Name = "";
             subredditInput.SetTextInputValue("");
         }),
         subredditInput.Item,
