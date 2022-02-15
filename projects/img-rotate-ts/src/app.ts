@@ -18,16 +18,7 @@ class MyTextInput  {
     }
 }
 
-class MouseClickAndDrag {
-    constructor(ele: HtmlEle, private _onDrag: (e: MouseEvent) => void) {
-        ele.target.addEventListener("mousedown", e => {
-            e.preventDefault();
-            const boundDrag = this._onDrag.bind(ele);
-            window.addEventListener("mousemove", boundDrag);
-            window.addEventListener("mouseup", e => window.removeEventListener("mousemove", boundDrag));
-        })
-    }
-}
+
 
 class Cube extends Flex {
     private _xRot = 0;
@@ -48,6 +39,16 @@ class Cube extends Flex {
             //         .src("")
             //         .setAttr("height", "200px")
             //     ).classes(["cube-face", "cube-bottom"])
+
+
+            // new Svg().viewBox(-100, -100, 200, 200).widthHeight(200, 200).children([
+            //     new Circle().Radius(40).Center(0, 0).styleAttr("fill: rgba(255, 0, 0, 0.5); stroke: red; stroke-width: 5px;"),
+            //     new Path().d(Path.randomPath(-100, 100, 20)).styleAttr("stroke: black; fill: transparent;")
+            // ]).styleAttr("position: absolute;"),
+            // new Svg().viewBox(-100, -100, 200, 200).widthHeight(200, 200).children([
+            //     new Circle().Radius(45).Center(0, 0).styleAttr("fill: rgba(0, 255, 0, 0.5); stroke: green; stroke-width: 5px;"),
+            //     new Path().d(Path.randomPath(-100, 100, 20)).styleAttr("stroke: black; fill: transparent;")
+            // ]).styleAttr("position: absolute; transform: rotateY(90deg);"),
         ])
         
         this.setStyle();
@@ -77,10 +78,10 @@ class Cube extends Flex {
 page().children([
     flex().children([
         new Cube(),
-        new Cube(400, 0),
-        new Cube(-400, 0),
-        new Cube(0, 400),
-        new Cube(0, -400),
+        // new Cube(400, 0),
+        // new Cube(-400, 0),
+        // new Cube(0, 400),
+        // new Cube(0, -400),
     ]).styleAttr(`
         flex-direction: column;
         height: 100%; 

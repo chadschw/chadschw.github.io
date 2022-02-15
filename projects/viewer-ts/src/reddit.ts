@@ -142,6 +142,23 @@ async function GetListing(subredditName: string, lastAfter = ""): Promise<Listin
     return listing;
 }
 
+async function SearchReddit(q: string, lastAfter = ""): Promise<Listing | null> {
+    if (q.length === 0) {
+        return null;
+    }
+
+    let url = `https://www.reddit.com/search/.json?q=${q}`;
+
+    if (lastAfter.length > 0) {
+        url += `&after=${lastAfter}`;
+    }
+    
+    console.debug(`Request url: ${url}`);
+    let response = await fetch(url);
+    let listing = await response.json() as Listing;
+    return listing;
+}
+
 class ListingVM {
     public ImagePosts: ImagePostVM[];
     public VideoPosts: VideoPostVM[];
@@ -175,12 +192,39 @@ class ImagePostVM extends PostVM {
         super(postData);
     }
 
+    public SmallestPreviewUrl() {
+        if (this.PostData.preview.enabled) {
+            const resolutions = this.PostData.preview.images[0].resolutions;
+            return this.CleanUrl(resolutions[0].url);
+        } else {
+            return "";
+        }
+    }
+
+    public SmallestPreviewWidthHeight() {
+        if (this.PostData.preview.enabled) {
+            const resolutions = this.PostData.preview.images[0].resolutions;
+            return new Point(resolutions[0].width, resolutions[0].height);
+        } else {
+            return new Point(0, 0);
+        }
+    }
+
     public LargestPreviewUrl() {
         if (this.PostData.preview.enabled) {
             const resolutions = this.PostData.preview.images[0].resolutions;
             return this.CleanUrl(resolutions[resolutions.length-1].url);
         } else {
             return "";
+        }
+    }
+
+    public LargestPreviewWidthHeight() {
+        if (this.PostData.preview.enabled) {
+            const resolutions = this.PostData.preview.images[0].resolutions;
+            return new Point(resolutions[resolutions.length-1].width, resolutions[resolutions.length-1].height);
+        } else {
+            return new Point(0, 0);
         }
     }
 

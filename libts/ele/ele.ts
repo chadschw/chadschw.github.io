@@ -193,6 +193,26 @@ class TextInput extends HtmlEle {
 
 function textInput(initialValue: string) { return new TextInput(initialValue); }
 
+class TextArea extends HtmlEle {
+    public get target(): HTMLTextAreaElement { return this._target as HTMLTextAreaElement; }
+    get value(): string { return this.target.value; }
+    set value(v: string) { this.target.value = v; }
+
+    constructor(initialValue: string) {
+        super("textarea");
+        this.classes(["text-input"]);
+        if (initialValue) {
+            this.value = initialValue;
+        }
+    }
+
+    ColsRows(cols: number, rows: number): TextArea {
+        this.setAttr("cols", cols.toString())
+        this.setAttr("rows", rows.toString())
+        return this;
+    }
+}
+
 class Button extends HtmlContainerEle {
     constructor() {
         super("button");
@@ -255,6 +275,62 @@ function download(url: string, filename: string) {
             document.body.removeChild(a.target);
         })
         .catch((e) => console.error("Download error:", e));
+}
+
+class Point {
+    constructor(public x: number, public y: number) {
+
+    }
+
+    Add(other: Point) {
+        this.x += other.x;
+        this.y += other.y;
+    }
+
+    Subtract(other: Point) {
+        this.x -= other.x;
+        this.y -= other.y;
+    }
+}
+
+class MouseClickAndDrag {
+    private _boundDrag: (e: MouseEvent) => void = e => {};
+    private _boundUp: (e: MouseEvent) => void = e => {};
+
+    constructor(ele: Ele, private _onDrag: (e: MouseEvent) => void) {
+        ele.target.addEventListener("mousedown", e => {
+            e.preventDefault();
+            e.stopPropagation();
+            this._boundDrag = this._onDrag.bind(ele);
+            this._boundUp = this.OnMouseUp.bind(this);
+            window.addEventListener("mousemove", this._boundDrag);
+            window.addEventListener("mouseup", this._boundUp);
+        })
+    }
+
+    OnMouseUp(e: Event) {
+        window.removeEventListener("mousemove", this._boundDrag)
+        window.removeEventListener("mouseup", this._boundUp)
+    }
+}
+
+class MouseDownUp {
+    private _boundUp: (e: MouseEvent) => void = e => {};
+
+    constructor(ele: Ele, private _onDown: (e: MouseEvent) => void, private _onUp: (e: MouseEvent) => void) {
+        ele.target.addEventListener("mousedown", e => {
+            e.preventDefault();
+            e.stopPropagation();
+            this._onDown(e as MouseEvent);
+            this._boundUp = this.OnMouseUp.bind(this);
+            window.addEventListener("mouseup", this._boundUp);
+        })
+    }
+
+    OnMouseUp(e: MouseEvent) {
+        this._onUp(e);
+        window.removeEventListener("mouseup", this._boundUp);
+    }
 }
 
 function ShortMonthName(d: Date): string { return new Intl.DateTimeFormat("en-US", { month: "short" }).format(d); }

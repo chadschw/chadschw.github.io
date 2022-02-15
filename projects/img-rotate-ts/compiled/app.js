@@ -215,12 +215,24 @@ function download(url, filename) {
     })
         .catch((e) => console.error("Download error:", e));
 }
+class MouseClickAndDrag {
+    constructor(ele, _onDrag) {
+        this._onDrag = _onDrag;
+        ele.target.addEventListener("mousedown", e => {
+            e.preventDefault();
+            const boundDrag = this._onDrag.bind(ele);
+            window.addEventListener("mousemove", boundDrag);
+            window.addEventListener("mouseup", e => window.removeEventListener("mousemove", boundDrag));
+        });
+    }
+}
 function ShortMonthName(d) { return new Intl.DateTimeFormat("en-US", { month: "short" }).format(d); }
 function TwoDigit(x, locale = "en-us") {
     return x.toLocaleString(locale, { minimumIntegerDigits: 2 });
 }
 function hhmm(d) { return d.getHours() + ":" + TwoDigit(d.getMinutes()); }
 ;
+function dayMonthYear(d) { return `${d.getDate()} ${ShortMonthName(d)} ${d.getFullYear()}`; }
 class Clock extends Flex {
     constructor() {
         super();
@@ -234,7 +246,7 @@ class Clock extends Flex {
         setInterval(() => {
             const d = new Date();
             this._timeSpan.textContent(hhmm(d));
-            this._dateSpan.textContent(`${d.getDate()} ${ShortMonthName(d)} ${d.getFullYear()}`);
+            this._dateSpan.textContent(dayMonthYear(d));
         }, 1000);
     }
 }
@@ -302,10 +314,20 @@ function themeToggleButton() {
     return new ThemeToggleButton();
 }
 class ContextMenuItem extends Div {
-    constructor(onClick) {
+    constructor(onClick, closeAfterClick = true) {
         super();
         this.onClick = onClick;
-        this.setOnClick(onClick);
+        if (closeAfterClick) {
+            this.setOnClick((e) => {
+                onClick();
+                if (this.target.parentElement) {
+                    this.target.parentElement.style.display = "none";
+                }
+            });
+        }
+        else {
+            this.setOnClick(onClick);
+        }
         this.classes(["context-menu-item"]);
     }
 }
@@ -319,6 +341,8 @@ class TextInputContextMenuItem extends ContextMenuItem {
     constructor(textInput) {
         super(() => { });
         this.addChild(textInput);
+        textInput.setOnClick(e => textInput.target.select());
+        this.setOnClick(e => e.stopPropagation());
     }
 }
 class ContextMenu extends Div {
@@ -330,6 +354,7 @@ class ContextMenu extends Div {
     }
     OnContextMenu(e) {
         e.preventDefault();
+        e.stopPropagation();
         if (this.target.style.display === "block") {
             this.target.style.display = "none";
             return;
@@ -342,6 +367,71 @@ class ContextMenu extends Div {
 function contextMenu(ele, items) {
     return new ContextMenu(ele, items);
 }
+class SvgEle extends Ele {
+    constructor(tagName) {
+        super(document.createElementNS(SvgEle.xmlns, tagName));
+    }
+    setAttrNS(name, value) {
+        this.target.setAttributeNS(null, name, value);
+        return this;
+    }
+}
+SvgEle.xmlns = "http://www.w3.org/2000/svg";
+class Svg extends SvgEle {
+    get target() {
+        return this._target;
+    }
+    constructor() {
+        super("svg");
+    }
+    children(kids) {
+        kids.forEach(kid => this.target.appendChild(kid.target));
+        return this;
+    }
+    addChild(kid) {
+        return this.children([kid]);
+    }
+    widthHeight(w, h) {
+        this.setAttrNS("width", w.toString());
+        this.setAttrNS("height", h.toString());
+        return this;
+    }
+    viewBox(x, y, w, h) {
+        this.setAttrNS("viewBox", `${x},${y},${w},${h}`);
+        return this;
+    }
+}
+class Circle extends SvgEle {
+    constructor() {
+        super("circle");
+    }
+    Radius(r) {
+        this.setAttrNS("r", r.toString());
+        return this;
+    }
+    Center(x, y) {
+        this.setAttrNS("cx", x.toString());
+        this.setAttrNS("cy", y.toString());
+        return this;
+    }
+}
+class Path extends SvgEle {
+    constructor() {
+        super("path");
+    }
+    d(str) {
+        this.setAttrNS("d", str);
+        return this;
+    }
+    static randomPath(min, max, steps) {
+        const start = (max - min) / 2;
+        let s = `M${start},${start} `;
+        for (let i = 0; i < steps; i++) {
+            s += `L${randBetween(min, max)},${randBetween(min, max)} `;
+        }
+        return s;
+    }
+}
 class MyTextInput {
     constructor(initialString) {
         this._textInput = textInput(initialString)
@@ -353,17 +443,6 @@ class MyTextInput {
     }
     OnEnter(e) {
         alert(`You entered: ${this._textInput.value}`);
-    }
-}
-class MouseClickAndDrag {
-    constructor(ele, _onDrag) {
-        this._onDrag = _onDrag;
-        ele.target.addEventListener("mousedown", e => {
-            e.preventDefault();
-            const boundDrag = this._onDrag.bind(ele);
-            window.addEventListener("mousemove", boundDrag);
-            window.addEventListener("mouseup", e => window.removeEventListener("mousemove", boundDrag));
-        });
     }
 }
 class Cube extends Flex {
@@ -386,6 +465,14 @@ class Cube extends Flex {
             //         .src("")
             //         .setAttr("height", "200px")
             //     ).classes(["cube-face", "cube-bottom"])
+            // new Svg().viewBox(-100, -100, 200, 200).widthHeight(200, 200).children([
+            //     new Circle().Radius(40).Center(0, 0).styleAttr("fill: rgba(255, 0, 0, 0.5); stroke: red; stroke-width: 5px;"),
+            //     new Path().d(Path.randomPath(-100, 100, 20)).styleAttr("stroke: black; fill: transparent;")
+            // ]).styleAttr("position: absolute;"),
+            // new Svg().viewBox(-100, -100, 200, 200).widthHeight(200, 200).children([
+            //     new Circle().Radius(45).Center(0, 0).styleAttr("fill: rgba(0, 255, 0, 0.5); stroke: green; stroke-width: 5px;"),
+            //     new Path().d(Path.randomPath(-100, 100, 20)).styleAttr("stroke: black; fill: transparent;")
+            // ]).styleAttr("position: absolute; transform: rotateY(90deg);"),
         ]);
         this.setStyle();
         new MouseClickAndDrag(this, this.OnDrag);
@@ -410,10 +497,10 @@ class Cube extends Flex {
 page().children([
     flex().children([
         new Cube(),
-        new Cube(400, 0),
-        new Cube(-400, 0),
-        new Cube(0, 400),
-        new Cube(0, -400),
+        // new Cube(400, 0),
+        // new Cube(-400, 0),
+        // new Cube(0, 400),
+        // new Cube(0, -400),
     ]).styleAttr(`
         flex-direction: column;
         height: 100%; 
