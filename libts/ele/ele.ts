@@ -447,15 +447,22 @@ abstract class ContextMenuItem extends Div {
         super();
         if (closeAfterClick) {
             this.setOnClick((e: Event) => {
+                e.stopPropagation();
                 onClick(); 
                 if (this.target.parentElement) {
                     this.target.parentElement.style.display = "none";
                 }
             });
         } else {
-            this.setOnClick(onClick);
+            this.setOnClick(e => {
+                e.stopPropagation();
+                onClick();
+            });
         }
         
+        this.target.addEventListener("mousedown", e => e.stopPropagation());
+        this.target.addEventListener("mouseup", e => e.stopPropagation());
+
         this.classes(["context-menu-item"]);
     }
 }
@@ -493,8 +500,8 @@ class ContextMenu extends Div {
             return;
         }
 
-        this.target.style.top = e.clientY + "px";
-        this.target.style.left = e.clientX + "px";
+        this.target.style.top = e.offsetY + "px";
+        this.target.style.left = e.offsetX + "px";
         this.target.style.display = "block";
     }
 }

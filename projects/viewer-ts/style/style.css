@@ -17,3 +17,15 @@ body {
     background-image: radial-gradient(var(--shade-1), var(--shade-2), var(--shade-3));
     font-size: 1.2rem;
 }
+
+.floating-img {
+    position: absolute;
+    transform-style: preserve-3d;
+}
+
+.floating-img-img {
+    border: 5px solid white;
+    /* box-shadow: var(--foreground-color) 1.95px 1.95px 2.6px; */
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    
+}

@@ -376,6 +376,7 @@ class ContextMenuItem extends Div {
         this.onClick = onClick;
         if (closeAfterClick) {
             this.setOnClick((e) => {
+                e.stopPropagation();
                 onClick();
                 if (this.target.parentElement) {
                     this.target.parentElement.style.display = "none";
@@ -383,8 +384,13 @@ class ContextMenuItem extends Div {
             });
         }
         else {
-            this.setOnClick(onClick);
+            this.setOnClick(e => {
+                e.stopPropagation();
+                onClick();
+            });
         }
+        this.target.addEventListener("mousedown", e => e.stopPropagation());
+        this.target.addEventListener("mouseup", e => e.stopPropagation());
         this.classes(["context-menu-item"]);
     }
 }
@@ -416,8 +422,8 @@ class ContextMenu extends Div {
             this.target.style.display = "none";
             return;
         }
-        this.target.style.top = e.clientY + "px";
-        this.target.style.left = e.clientX + "px";
+        this.target.style.top = e.offsetY + "px";
+        this.target.style.left = e.offsetX + "px";
         this.target.style.display = "block";
     }
 }
@@ -623,6 +629,20 @@ class ImagePostVM extends PostVM {
             return new Point(0, 0);
         }
     }
+    NumPreviewSizes() {
+        return this.PostData.preview.enabled ?
+            this.PostData.preview.images[0].resolutions.length : 0;
+    }
+    PreviewUrl(index) {
+        const numPreviews = this.NumPreviewSizes();
+        if (numPreviews == 0) {
+            return "";
+        }
+        if (index >= this.NumPreviewSizes()) {
+            index = this.NumPreviewSizes() - 1;
+        }
+        return this.CleanUrl(this.PostData.preview.images[0].resolutions[index].url);
+    }
     SourceUrl() {
         if (this.PostData.preview.enabled) {
             return this.CleanUrl(this.PostData.preview.images[0].source.url);
@@ -801,21 +821,47 @@ class DynamicPreviewer extends Div {
         this.target.innerHTML = "";
     }
 }
-class FloatingImg extends Img {
+class FloatingImg extends Div {
     constructor(_imgPostVM, _pos, _vel, _friction) {
         super();
         this._imgPostVM = _imgPostVM;
         this._pos = _pos;
         this._vel = _vel;
         this._friction = _friction;
+        this._img = img();
         this._dragHist = [];
         this._length = 10;
         this._downPos = new Point(0, 0);
-        this.target.style.position = "absolute";
+        this._maxRot = 45;
+        this._zRot = 0;
+        this._maxZRotVel = 0.5;
+        this._zRotVel = randBetween(-this._maxZRotVel, this._maxZRotVel);
+        this._previewIndex = 0;
+        this.classes(["floating-img"]);
+        this._img.classes(["floating-img-img"]);
+        this.children([
+            this._img,
+            contextMenu(this.target, [
+                // new TextContextMenuItem("Info", () => { 
+                //     let visibility = this._previewImgInfoVM.target.style.visibility;
+                //     if (visibility === "hidden") {
+                //         this._previewImgInfoVM.target.style.visibility = "visible";
+                //     } else {
+                //         this._previewImgInfoVM.target.style.visibility = "hidden";
+                //     }
+                // }),
+                new TextContextMenuItem("Source", () => window.open(this._imgPostVM?.SourceUrl(), "_blank")),
+                new TextContextMenuItem("Url", () => window.open(this._imgPostVM?.Url(), "_blank")),
+                new TextContextMenuItem("Permalink", () => window.open(this._imgPostVM?.Permalink(), "_blank")),
+                new TextContextMenuItem("Search Reddit", () => window.open(`https://www.reddit.com/search/?q=${this._imgPostVM?.PostData.title}`)),
+                new TextContextMenuItem("Search Google", () => window.open(`https://www.google.com/search?q=${this._imgPostVM?.PostData.title}`))
+            ])
+        ]);
         this.target.style.left = this._pos.x + "px";
         this.target.style.top = this._pos.y + "px";
-        this.src(this._imgPostVM.SmallestPreviewUrl());
+        this._img.src(this._imgPostVM.SmallestPreviewUrl());
         this.Update();
+        this._numPreviews = this._imgPostVM.NumPreviewSizes();
         new MouseClickAndDrag(this, e => {
             this._pos.x += e.movementX;
             this._pos.y += e.movementY;
@@ -828,18 +874,35 @@ class FloatingImg extends Img {
         }, e => {
             e.preventDefault();
             e.stopPropagation();
+            if (e.button == 2)
+                return;
             const upPos = new Point(e.clientX, e.clientY);
             upPos.Subtract(this._downPos);
             upPos.x /= 10;
             upPos.y /= 10;
             this._vel = upPos;
+            //this._zRotVel = randBetween(-this._maxZRotVel, this._maxZRotVel);
         });
-        // todo: this doesn't remove the image from _floatingImgs.
-        this.target.oncontextmenu = e => {
+        this.target.onwheel = e => {
             e.stopPropagation();
             e.preventDefault();
-            this.target.parentElement?.removeChild(this.target);
+            if (e.deltaY > 0) {
+                if (this._previewIndex < this._numPreviews - 1) {
+                    this._img.src(this._imgPostVM.PreviewUrl(++this._previewIndex));
+                    this._zRot = 0;
+                    this._zRotVel = 0;
+                }
+            }
+            else if (this._previewIndex > 0) {
+                this._img.src(this._imgPostVM.PreviewUrl(--this._previewIndex));
+            }
         };
+        // // todo: this doesn't remove the image from _floatingImgs.
+        // this.target.oncontextmenu = e => {
+        //     e.stopPropagation();
+        //     e.preventDefault();
+        //     this.target.parentElement?.removeChild(this.target);
+        // }
         for (let i = 0; i < this._length; i++) {
             this._dragHist[i] = new Point(0, 0);
         }
@@ -853,8 +916,14 @@ class FloatingImg extends Img {
             this._vel.y = 0;
         this._pos.x += this._vel.x;
         this._pos.y += this._vel.y;
+        this._zRotVel *= this._friction;
+        this._zRot += this._zRotVel;
+        if (Math.abs(this._zRot) > this._maxRot) {
+            this._zRotVel *= -1;
+        }
         this.target.style.left = this._pos.x + "px";
         this.target.style.top = this._pos.y + "px";
+        this.target.style.transform = `rotateZ(${this._zRot}deg)`;
     }
 }
 function cipher(salt) {

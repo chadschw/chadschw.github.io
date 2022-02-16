@@ -56,20 +56,48 @@ class DynamicPreviewer extends Div {
     }
 }
 
-class FloatingImg extends Img {
-
+class FloatingImg extends Div {
+    private _img = img();
     private _dragHist: Point[] = [];
     private _length = 10;
     private _downPos: Point = new Point(0, 0);
-
+    private _maxRot = 45;
+    private _zRot = 0;
+    private _maxZRotVel = 0.5;
+    private _zRotVel = randBetween(-this._maxZRotVel, this._maxZRotVel);
+    private _previewIndex = 0;
+    private _numPreviews;
+    
     constructor(private _imgPostVM: ImagePostVM, private _pos: Point, private _vel: Point, private _friction: number) {
         super();
-        this.target.style.position = "absolute";
+        this.classes(["floating-img"])
+        this._img.classes(["floating-img-img"])
+        this.children([
+            this._img,
+            contextMenu(this.target, [
+                // new TextContextMenuItem("Info", () => { 
+                //     let visibility = this._previewImgInfoVM.target.style.visibility;
+                //     if (visibility === "hidden") {
+                //         this._previewImgInfoVM.target.style.visibility = "visible";
+                //     } else {
+                //         this._previewImgInfoVM.target.style.visibility = "hidden";
+                //     }
+                // }),
+                new TextContextMenuItem("Source", () => window.open(this._imgPostVM?.SourceUrl(), "_blank")),
+                new TextContextMenuItem("Url", () => window.open(this._imgPostVM?.Url(), "_blank")),
+                new TextContextMenuItem("Permalink", () => window.open(this._imgPostVM?.Permalink(), "_blank")),
+                new TextContextMenuItem("Search Reddit", () => window.open(`https://www.reddit.com/search/?q=${this._imgPostVM?.PostData.title}`)),
+                new TextContextMenuItem("Search Google", () => window.open(`https://www.google.com/search?q=${this._imgPostVM?.PostData.title}`))
+            ])
+        ])
+        
         this.target.style.left = this._pos.x + "px";
         this.target.style.top = this._pos.y + "px";
-        this.src(this._imgPostVM.SmallestPreviewUrl())
+        this._img.src(this._imgPostVM.SmallestPreviewUrl())
 
         this.Update();
+
+        this._numPreviews = this._imgPostVM.NumPreviewSizes();
 
         new MouseClickAndDrag(this, e => {
             this._pos.x += e.movementX;
@@ -85,19 +113,38 @@ class FloatingImg extends Img {
         e => {
             e.preventDefault();
             e.stopPropagation();
+
+            if (e.button == 2 ) return;
+            
             const upPos = new Point(e.clientX, e.clientY);
             upPos.Subtract(this._downPos);
             upPos.x /= 10;
             upPos.y /= 10;
             this._vel = upPos;
+            //this._zRotVel = randBetween(-this._maxZRotVel, this._maxZRotVel);
         })
-        
-        // todo: this doesn't remove the image from _floatingImgs.
-        this.target.oncontextmenu = e => {
+
+        this.target.onwheel = e => {
             e.stopPropagation();
             e.preventDefault();
-            this.target.parentElement?.removeChild(this.target);
+
+            if (e.deltaY > 0) {
+                if (this._previewIndex < this._numPreviews - 1) {
+                    this._img.src(this._imgPostVM.PreviewUrl(++this._previewIndex))
+                    this._zRot = 0;
+                    this._zRotVel = 0;
+                }
+            } else if (this._previewIndex > 0) {
+                this._img.src(this._imgPostVM.PreviewUrl(--this._previewIndex))
+            }
         }
+        
+        // // todo: this doesn't remove the image from _floatingImgs.
+        // this.target.oncontextmenu = e => {
+        //     e.stopPropagation();
+        //     e.preventDefault();
+        //     this.target.parentElement?.removeChild(this.target);
+        // }
 
         for (let i = 0; i < this._length; i++) {
             this._dragHist[i] = new Point(0,0);
@@ -113,27 +160,15 @@ class FloatingImg extends Img {
 
         this._pos.x += this._vel.x;
         this._pos.y += this._vel.y;
-        
+
+        this._zRotVel *= this._friction;
+        this._zRot += this._zRotVel;
+        if (Math.abs(this._zRot) > this._maxRot) {
+            this._zRotVel *= -1;
+        }
+
         this.target.style.left = this._pos.x + "px";
         this.target.style.top = this._pos.y + "px";
+        this.target.style.transform = `rotateZ(${this._zRot}deg)`;
     }
-
-    
-
-    // OnDrag(e: MouseEvent) {
-    //     const movement = new Point(e.movementX, e.movementY);
-        
-    //     // TODO: This averaging this isn't working right.
-    //     this._sum.Subtract(this._dragHist[this._idx]);
-    //     this._sum.Add(movement);
-    //     if (++this._idx == this._length) {
-    //         this._idx = 0;
-    //     }
-
-    //     this._vel = new Point(this._sum.x / this._length, this._sum.y/this._length);
-
-    //     //this._vel = new Point(0, 0);
-    //     this._pos.x += e.movementX;
-    //     this._pos.y += e.movementY;
-    // }
 }

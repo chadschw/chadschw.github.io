@@ -228,6 +228,23 @@ class ImagePostVM extends PostVM {
         }
     }
 
+    public NumPreviewSizes(): number {
+        return this.PostData.preview.enabled ?
+            this.PostData.preview.images[0].resolutions.length: 0;
+    }
+
+    public PreviewUrl(index: number) {
+        const numPreviews = this.NumPreviewSizes();
+        if (numPreviews == 0) {
+            return "";
+        }
+        if (index >= this.NumPreviewSizes()) {
+            index = this.NumPreviewSizes() -1;
+        }
+
+        return this.CleanUrl(this.PostData.preview.images[0].resolutions[index].url);
+    }
+
     public SourceUrl() {
         if (this.PostData.preview.enabled) {
             return this.CleanUrl(this.PostData.preview.images[0].source.url);
