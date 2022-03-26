@@ -12,8 +12,8 @@ class PresentSubreddit {
 }
 
 const presentSubreddit = new PresentSubreddit();
-//const previewer = new Previewer();
-const previewer = new DynamicPreviewer();
+const previewer = new Previewer();
+//const previewer = new DynamicPreviewer();
 const defaultSubreddit = "earthporn:new";
 
 async function GetPosts(subreddit: string) {

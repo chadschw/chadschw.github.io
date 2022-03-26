@@ -677,10 +677,12 @@ class Previewer extends Flex {
             flex-direction: column;
         `);
         this._previewImgInfoVM.target.style.visibility = "hidden";
+        this._img.target.style.position = "relative";
+        this._img.target.style.boxSizing = "border-box";
         this.children([
             this._img,
             this._previewImgInfoVM,
-            contextMenu(this._img.target, [
+            contextMenu(this.target, [
                 new TextContextMenuItem("Info", () => {
                     let visibility = this._previewImgInfoVM.target.style.visibility;
                     if (visibility === "hidden") {
@@ -996,8 +998,8 @@ class PresentSubreddit {
     }
 }
 const presentSubreddit = new PresentSubreddit();
-//const previewer = new Previewer();
-const previewer = new DynamicPreviewer();
+const previewer = new Previewer();
+//const previewer = new DynamicPreviewer();
 const defaultSubreddit = "earthporn:new";
 async function GetPosts(subreddit) {
     if (presentSubreddit.Name !== subreddit) {

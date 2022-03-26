@@ -1,0 +1,32 @@
+
+* {
+    user-select: none;
+}
+
+html {
+    font-size: 62.5%;
+    /* font-family: DM Sans; */
+    font-family: consolas;
+
+}
+
+html, body {
+    height: 100%;
+    margin: 0px;
+}
+
+body {
+    /* background-image: radial-gradient(var(--shade-1), var(--shade-2), var(--shade-3)); */
+    background-color: #a0a0a0;
+    font-size: 1.2rem;
+}
+
+.cs-text-file-view-name {
+    font-size: 6rem;
+    font-weight: bold;
+}
+
+.cs-text-file-view-line {
+    white-space: pre;
+    text-rendering: optimizeSpeed;
+}

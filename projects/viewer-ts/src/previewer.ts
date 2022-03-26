@@ -16,11 +16,13 @@ class Previewer extends Flex {
         `);
         
         this._previewImgInfoVM.target.style.visibility = "hidden";
+        this._img.target.style.position = "relative";
+        this._img.target.style.boxSizing = "border-box";
 
         this.children([
             this._img,
             this._previewImgInfoVM,
-            contextMenu(this._img.target, [
+            contextMenu(this.target, [
                 new TextContextMenuItem("Info", () => { 
                     let visibility = this._previewImgInfoVM.target.style.visibility;
                     if (visibility === "hidden") {
