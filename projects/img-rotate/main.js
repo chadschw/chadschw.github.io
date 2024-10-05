@@ -24,10 +24,10 @@ let xStep = 0.05;
 
 let mouseDown = false;
 
-window.onmousedown = e => mouseDown = true;
-window.onmouseup = e => mouseDown = false;
+window.onpointerdown = e => mouseDown = true;
+window.onpointerup = e => mouseDown = false;
 
-window.onmousemove = e => {
+window.onpointermove = e => {
     if (!mouseDown) {
         return;
     }

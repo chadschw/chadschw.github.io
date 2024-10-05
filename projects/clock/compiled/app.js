@@ -251,18 +251,18 @@ class MouseClickAndDrag {
         this._onDrag = _onDrag;
         this._boundDrag = e => { };
         this._boundUp = e => { };
-        ele.target.addEventListener("mousedown", e => {
+        ele.target.addEventListener("pointerdown", e => {
             e.preventDefault();
             e.stopPropagation();
             this._boundDrag = this._onDrag.bind(ele);
             this._boundUp = this.OnMouseUp.bind(this);
-            window.addEventListener("mousemove", this._boundDrag);
-            window.addEventListener("mouseup", this._boundUp);
+            window.addEventListener("pointermove", this._boundDrag);
+            window.addEventListener("pointerup", this._boundUp);
         });
     }
     OnMouseUp(e) {
-        window.removeEventListener("mousemove", this._boundDrag);
-        window.removeEventListener("mouseup", this._boundUp);
+        window.removeEventListener("pointermove", this._boundDrag);
+        window.removeEventListener("pointerup", this._boundUp);
     }
 }
 class MouseDownUp {
@@ -270,17 +270,17 @@ class MouseDownUp {
         this._onDown = _onDown;
         this._onUp = _onUp;
         this._boundUp = e => { };
-        ele.target.addEventListener("mousedown", e => {
+        ele.target.addEventListener("pointerdown", e => {
             e.preventDefault();
             e.stopPropagation();
             this._onDown(e);
             this._boundUp = this.OnMouseUp.bind(this);
-            window.addEventListener("mouseup", this._boundUp);
+            window.addEventListener("pointerup", this._boundUp);
         });
     }
     OnMouseUp(e) {
         this._onUp(e);
-        window.removeEventListener("mouseup", this._boundUp);
+        window.removeEventListener("pointerup", this._boundUp);
     }
 }
 function ShortMonthName(d) { return new Intl.DateTimeFormat("en-US", { month: "short" }).format(d); }
@@ -699,168 +699,82 @@ class SvgTSpan extends SvgEle {
         return this;
     }
 }
-// class Quote {
-//     constructor(public quote: string, public author = "Unknown") {}
-// }
-// const quotes: Quote[] = [
-//     new Quote(
-//         "I'm selfish, impatient and a little insecure. I make mistakes, I am out of control and at times hard to handle. But if you can't handle me at my worst, then you sure as hell don't deserve me at my best.",
-//         "Marilyn Monroe"
-//     ),
-//     new Quote(
-//         "Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.",
-//         "Albert Einstien"
-//     ),
-//     new Quote(
-//         "For instance, on the planet Earth, man had always assumed that he was more intelligent than dolphins because he had achieved so much—the wheel, New York, wars and so on—whilst all the dolphins had ever done was muck about in the water having a good time. But conversely, the dolphins had always believed that they were far more intelligent than man—for precisely the same reasons.",
-//         "Douglas Adams"
-//     )
-// ];
-// const quoteSpan = span();
-// const authorSpan = span();
-// function loadQuote() {
-//     const quote = quotes[Math.floor(randBetween(0, quotes.length))];
-//     quoteSpan.textContent(quote.quote);
-//     authorSpan.textContent("- " + quote.author);
-// }
-// class MyTextInput  {
-//     public Item: TextInputContextMenuItem;
-//     private _textInput: TextInput;
-//     constructor(initialString: string) {
-//         this._textInput = textInput(initialString)
-//             .onenter(this.OnEnter.bind(this))
-//             .styleAttr(`
-//             `) as TextInput;
-//         this.Item = new TextInputContextMenuItem(this._textInput);
-//     }
-//     private OnEnter(e: Event) {
-//         alert(`You entered: ${this._textInput.value}`);
-//     }
-// }
-class ArrayIdx {
-    constructor(arr, startingIdx = 0) {
-        this.arr = arr;
-        this.startingIdx = startingIdx;
-        this.index = startingIdx;
-    }
-    next() {
-        this.index++;
-        if (this.index >= this.arr.length) {
-            this.index = 0;
-        }
-        return this.index;
-    }
-    prev() {
-        this.index--;
-        if (this.index < 0) {
-            this.index = this.arr.length - 1;
-        }
-        return this.index;
-    }
-}
-let urls = [
-    "https://w.wallhaven.cc/full/j3/wallhaven-j3m8y5.png",
-    "https://w.wallhaven.cc/full/l8/wallhaven-l83o92.jpg",
-    "https://w.wallhaven.cc/full/l3/wallhaven-l3xk6q.jpg",
-    "https://w.wallhaven.cc/full/lm/wallhaven-lmk652.jpg",
-    "https://w.wallhaven.cc/full/o5/wallhaven-o55z5l.jpg",
-    "https://w.wallhaven.cc/full/p9/wallhaven-p99qv3.jpg",
-    "https://w.wallhaven.cc/full/3l/wallhaven-3llyq6.jpg",
-    "https://i.redd.it/uhghw2a4yzea1.jpg",
-    "https://external-preview.redd.it/xof464Z61S5bWkeydrni-NWm9pLaRmXf8LdngyxTJl0.png?auto=webp&v=enabled&s=6618cbdb36544db8e9f7f199c27834e4d743d768",
-    "https://i.redd.it/ksw1nb3t3faa1.png",
-    "https://i.redd.it/hkfyvjyav1ea1.jpg",
-    "https://i.redd.it/xu6nr0c0jhda1.jpg",
-    "https://preview.redd.it/wkp1biib47da1.png?width=3640&format=png&auto=webp&v=enabled&s=4231334731df1be468bc4252cd5092b0c6558387",
-    "https://preview.redd.it/j2yf7bna47da1.png?width=3060&format=png&auto=webp&v=enabled&s=ef6f4242dc04ab768fe790a1cab9fe744ab4b308",
-    "https://preview.redd.it/4ob0sfya47da1.png?width=1998&format=png&auto=webp&v=enabled&s=5885a578ded71138fdc68159d9c753ce69cbb482",
-    "https://preview.redd.it/wj5ccona47da1.jpg?width=5000&format=pjpg&auto=webp&v=enabled&s=91a3f322b543b30d8515208f04594bece0206484",
-    "https://i.redd.it/g4crddfnmt9a1.jpg",
-    "https://w.wallhaven.cc/full/kx/wallhaven-kx98xd.jpg",
-    "https://w.wallhaven.cc/full/o5/wallhaven-o59gvl.jpg",
-    "https://w.wallhaven.cc/full/4y/wallhaven-4ydrmx.jpg",
-    "https://w.wallhaven.cc/full/4g/wallhaven-4gyk1e.jpg",
-    "https://w.wallhaven.cc/full/48/wallhaven-48vdmj.jpg",
-    "https://w.wallhaven.cc/full/nz/wallhaven-nzl7dg.jpg",
-    "https://w.wallhaven.cc/full/vg/wallhaven-vglogp.jpg",
-    "https://w.wallhaven.cc/full/45/wallhaven-457565.jpg",
-    "https://w.wallhaven.cc/full/0w/wallhaven-0wd816.jpg",
-    "https://w.wallhaven.cc/full/6q/wallhaven-6qwdqw.jpg",
-    "https://w.wallhaven.cc/full/nr/wallhaven-nrz63m.jpg",
-    "https://w.wallhaven.cc/full/83/wallhaven-83o1x2.jpg",
-    "https://w.wallhaven.cc/full/4v/wallhaven-4v887l.jpg",
-    "https://w.wallhaven.cc/full/qd/wallhaven-qd93g5.jpg",
-    "https://w.wallhaven.cc/full/76/wallhaven-769zl3.png",
-    "https://w.wallhaven.cc/full/r7/wallhaven-r7oo3w.jpg",
-    "https://w.wallhaven.cc/full/r7/wallhaven-r7yv27.jpg",
-    "https://w.wallhaven.cc/full/42/wallhaven-428rzy.jpg",
-    "https://w.wallhaven.cc/full/76/wallhaven-76jmke.jpg",
-    "https://w.wallhaven.cc/full/49/wallhaven-49glrw.jpg",
-    "https://w.wallhaven.cc/full/4o/wallhaven-4om8j7.jpg",
-    "https://w.wallhaven.cc/full/p2/wallhaven-p2jj8j.jpg",
-    "https://w.wallhaven.cc/full/49/wallhaven-495x9x.jpg",
-    "https://w.wallhaven.cc/full/xl/wallhaven-xllm6o.jpg",
-    "https://w.wallhaven.cc/full/p2/wallhaven-p2pm8m.jpg",
-    "https://w.wallhaven.cc/full/p2/wallhaven-p2o5pm.jpg",
-];
-let arrIdx = new ArrayIdx(urls);
-let theDiv = div()
+let bgImgPath = "bg2.jpg";
+let showDate = true;
+let showSeconds = true;
+// state = 0 means show date, time and seconds
+// state = 1 means show time and seconds
+// state = 2 means show time and not seconds
+let state = 0;
+const clockSpan = span()
     .styleAttr(`
-        background-color: #0f0f0f;
-        background-size: cover;
-        background-position: center;
-        height: 100%;
-        width: 100%;
+        padding: 5px;
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.75);
+        box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
     `);
-page().children([
-    theDiv
-    // flex().addChild(
-    //     div()
-    //         .children([
-    //             div().addChild(quoteSpan).styleAttr(`font-size: 2rem; width: 100%;`),
-    //             div().addChild(authorSpan).styleAttr(`text-align:right; width: 100%; font-weight: bold;`)
-    //         ])
-    //         .setOnClick(loadQuote)
-    //         .styleAttr(`
-    //             background-color: var(--background-color);
-    //             border-radius: var(--border-radius);
-    //             box-shadow: 0px 0px 3px 3px var(--shadow-color);
-    //             color: var(--foreground-color);
-    //             cursor: pointer;
-    //             padding: 16px;
-    //             width: 400px;
-    //         `)
-    //     ).styleAttr(`
-    //         flex-direction: column;
-    //         height: 100%; 
-    //         width: 100%;
-    //     `),
-    // themeToggleButton()
-    //     .styleAttr(`
-    //         position: absolute;
-    //         top: 0;
-    //         right: 0;
-    //     `),
-    // contextMenu(document.body, [
-    //     new TextContextMenuItem("Theme", Theme.Toggle),
-    //     new TextContextMenuItem("Something Else", () => alert("Hi")),
-    //     new MyTextInput("yo yo").Item
-    // ])
-]);
-theDiv.target.style.backgroundImage = `url(${urls[0]})`;
-window.addEventListener("wheel", e => {
-    let idx = e.deltaY > 0 ? arrIdx.next() : arrIdx.prev();
-    theDiv.target.style.backgroundImage = `url(${urls[idx]})`;
-});
-window.addEventListener("keypress", e => {
-    let key = e.key;
-    if (key !== 'j' && key !== 'k') {
-        return;
+clockSpan.setOnClick(e => {
+    if (++state == 3) {
+        state = 0;
     }
-    let idx = e.key === 'j' ? arrIdx.next() : arrIdx.prev();
-    theDiv.target.style.backgroundImage = `url(${urls[idx]})`;
+    switch (state) {
+        case 0:
+            showDate = true;
+            showSeconds = true;
+            break;
+        case 1:
+            showDate = false;
+            break;
+        case 2:
+            showSeconds = false;
+            break;
+    }
+    update();
 });
-window.addEventListener("mousedown", e => {
-    theDiv.target.style.backgroundImage = `url(${urls[arrIdx.next()]})`;
-});
+function padWithZero(n) {
+    return n.toString().padStart(2, "0");
+}
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function update() {
+    let date = new Date();
+    let text = "";
+    if (showDate) {
+        const year = date.getFullYear();
+        const month = months[date.getMonth()];
+        const day = date.getDate();
+        text += `${year} ${month} ${day} `;
+    }
+    const hour = padWithZero(date.getHours());
+    const min = padWithZero(date.getMinutes());
+    text += `${hour}:${min}`;
+    if (showSeconds) {
+        const sec = padWithZero(date.getSeconds());
+        text += `:${sec}`;
+    }
+    clockSpan.textContent(text);
+}
+const theFlex = flex()
+    .addChild(clockSpan)
+    .styleAttr(`
+    background-size: cover;
+    background-position: center;
+    background-image: url("${bgImgPath}");
+    height:100%;
+    font-family: monospace;
+    font-size: 16px;
+`);
+page().children([theFlex]);
+window.oncontextmenu = e => {
+    e.preventDefault();
+    const newPath = prompt("background image url");
+    var style = theFlex.target.style;
+    if (newPath) {
+        style.backgroundImage = `url("${newPath}")`;
+    }
+    else {
+        style.backgroundImage = `url("${bgImgPath}")`;
+    }
+};
+update();
+setInterval(() => update(), 1000);
 //# sourceMappingURL=app.js.map

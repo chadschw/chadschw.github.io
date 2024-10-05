@@ -161,6 +161,23 @@ class TextInput extends HtmlEle {
     }
 }
 function textInput(initialValue) { return new TextInput(initialValue); }
+class TextArea extends HtmlEle {
+    get target() { return this._target; }
+    get value() { return this.target.value; }
+    set value(v) { this.target.value = v; }
+    constructor(initialValue) {
+        super("textarea");
+        this.classes(["text-input"]);
+        if (initialValue) {
+            this.value = initialValue;
+        }
+    }
+    ColsRows(cols, rows) {
+        this.setAttr("cols", cols.toString());
+        this.setAttr("rows", rows.toString());
+        return this;
+    }
+}
 class Button extends HtmlContainerEle {
     constructor() {
         super("button");
@@ -215,15 +232,55 @@ function download(url, filename) {
     })
         .catch((e) => console.error("Download error:", e));
 }
+class Point {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    Add(other) {
+        this.x += other.x;
+        this.y += other.y;
+    }
+    Subtract(other) {
+        this.x -= other.x;
+        this.y -= other.y;
+    }
+}
 class MouseClickAndDrag {
     constructor(ele, _onDrag) {
         this._onDrag = _onDrag;
-        ele.target.addEventListener("mousedown", e => {
+        this._boundDrag = e => { };
+        this._boundUp = e => { };
+        ele.target.addEventListener("pointerdown", e => {
             e.preventDefault();
-            const boundDrag = this._onDrag.bind(ele);
-            window.addEventListener("mousemove", boundDrag);
-            window.addEventListener("mouseup", e => window.removeEventListener("mousemove", boundDrag));
+            e.stopPropagation();
+            this._boundDrag = this._onDrag.bind(ele);
+            this._boundUp = this.OnMouseUp.bind(this);
+            window.addEventListener("pointermove", this._boundDrag);
+            window.addEventListener("pointerup", this._boundUp);
         });
+    }
+    OnMouseUp(e) {
+        window.removeEventListener("pointermove", this._boundDrag);
+        window.removeEventListener("pointerup", this._boundUp);
+    }
+}
+class MouseDownUp {
+    constructor(ele, _onDown, _onUp) {
+        this._onDown = _onDown;
+        this._onUp = _onUp;
+        this._boundUp = e => { };
+        ele.target.addEventListener("pointerdown", e => {
+            e.preventDefault();
+            e.stopPropagation();
+            this._onDown(e);
+            this._boundUp = this.OnMouseUp.bind(this);
+            window.addEventListener("pointerup", this._boundUp);
+        });
+    }
+    OnMouseUp(e) {
+        this._onUp(e);
+        window.removeEventListener("pointerup", this._boundUp);
     }
 }
 function ShortMonthName(d) { return new Intl.DateTimeFormat("en-US", { month: "short" }).format(d); }
@@ -319,6 +376,7 @@ class ContextMenuItem extends Div {
         this.onClick = onClick;
         if (closeAfterClick) {
             this.setOnClick((e) => {
+                e.stopPropagation();
                 onClick();
                 if (this.target.parentElement) {
                     this.target.parentElement.style.display = "none";
@@ -326,8 +384,13 @@ class ContextMenuItem extends Div {
             });
         }
         else {
-            this.setOnClick(onClick);
+            this.setOnClick(e => {
+                e.stopPropagation();
+                onClick();
+            });
         }
+        this.target.addEventListener("mousedown", e => e.stopPropagation());
+        this.target.addEventListener("mouseup", e => e.stopPropagation());
         this.classes(["context-menu-item"]);
     }
 }
@@ -359,8 +422,8 @@ class ContextMenu extends Div {
             this.target.style.display = "none";
             return;
         }
-        this.target.style.top = e.clientY + "px";
-        this.target.style.left = e.clientX + "px";
+        this.target.style.top = e.offsetY + "px";
+        this.target.style.left = e.offsetX + "px";
         this.target.style.display = "block";
     }
 }
@@ -377,12 +440,9 @@ class SvgEle extends Ele {
     }
 }
 SvgEle.xmlns = "http://www.w3.org/2000/svg";
-class Svg extends SvgEle {
-    get target() {
-        return this._target;
-    }
-    constructor() {
-        super("svg");
+class SvgContainerEle extends SvgEle {
+    constructor(tagName) {
+        super(tagName);
     }
     children(kids) {
         kids.forEach(kid => this.target.appendChild(kid.target));
@@ -390,6 +450,131 @@ class Svg extends SvgEle {
     }
     addChild(kid) {
         return this.children([kid]);
+    }
+}
+class ViewBox {
+    constructor(_svg) {
+        this._svg = _svg;
+        this._pos = new Point(0, 0);
+        this._size = new Point(0, 0);
+        this._scale = 1.0;
+        this._mouseDown = false;
+        this._mousePos = new Point(0, 0);
+        this._mousePosLast = new Point(0, 0);
+        this._onWheel = this.OnWheel.bind(this);
+        this._onMouseDown = this.OnMouseDown.bind(this);
+        this._onMouseMove = this.OnMouseMove.bind(this);
+        this._onMouseUp = this.OnMouseUp.bind(this);
+        this._render = this.Render.bind(this);
+        this._svg.target.addEventListener("wheel", this._onWheel);
+        this._svg.target.addEventListener("mousedown", this._onMouseDown);
+    }
+    set Size(s) {
+        this._size = s;
+        this.Set();
+    }
+    get viewBox() { return `${this._pos.x} ${this._pos.y} ${this._size.x} ${this._size.y}`; }
+    get Scale() { return this._scale; }
+    Set() {
+        this._svg.setAttrNS("viewBox", `${this._pos.x} ${this._pos.y} ${this._size.x} ${this._size.y}`);
+    }
+    OnResize(clientSize) {
+        this.Size = new Point(clientSize.x / this._scale, clientSize.y / this._scale);
+    }
+    Unload() {
+        this._svg.target.removeEventListener("wheel", this._onWheel);
+    }
+    OnWheel(e) {
+        e.preventDefault();
+        const we = e;
+        this.Zoom(we.deltaY < 0, we);
+        console.log(`Scale: ${this._scale}`);
+    }
+    ClientPointToSvgPoint(clientPoint) {
+        // TODO: make this a member variable and update it in an onResize
+        const clientRect = this._svg.target.getBoundingClientRect();
+        const mouseX = this.ConvertRange(clientPoint.x - clientRect.left, 0, this._svg.target.clientWidth, this._pos.x, this._pos.x + this._size.x);
+        const mouseY = this.ConvertRange(clientPoint.y - clientRect.top, 0, this._svg.target.clientHeight, this._pos.y, this._pos.y + this._size.y);
+        return new Point(mouseX, mouseY);
+    }
+    Zoom(zoomIn, e) {
+        const svgPoint = this.ClientPointToSvgPoint(new Point(e.clientX, e.clientY));
+        const adjust = e.ctrlKey ? 1.05 : 1.5;
+        this.AdjustScale(zoomIn, adjust);
+        let newWidth = this._svg.target.clientWidth / this._scale;
+        let newHeight = this._svg.target.clientHeight / this._scale;
+        this._pos = new Point(this.Zoom1D(svgPoint.x, this._pos.x, this._pos.x + this._size.x, newWidth), this.Zoom1D(svgPoint.y, this._pos.y, this._pos.y + this._size.y, newHeight));
+        this.Size = new Point(newWidth, newHeight);
+        this.Set();
+    }
+    ConvertRange(x, x1, x2, y1, y2) {
+        if (x2 === x1) {
+            return 0;
+        }
+        const m = (y2 - y1) / (x2 - x1);
+        const b = y1 - (m * x1);
+        return m * x + b;
+    }
+    AdjustScale(zoomIn, adjust) {
+        let newScale = zoomIn ? this._scale * adjust : this._scale / adjust;
+        if (newScale > 100) {
+            newScale = 100;
+        }
+        else if (newScale < 0.01) {
+            newScale = 0.01;
+        }
+        this._scale = newScale;
+    }
+    Zoom1D(x, start, end, newWidth) {
+        let width = end - start;
+        if (width === 0) {
+            return 0;
+        }
+        let devicePixelRatio = (x - start) / width;
+        let newStart = x - (newWidth * devicePixelRatio);
+        return newStart;
+    }
+    OnMouseDown(e) {
+        this._mousePosLast.x = this._mousePos.x = e.clientX;
+        this._mousePosLast.y = this._mousePos.y = e.clientY;
+        this._mouseDown = true;
+        window.addEventListener("mousemove", this._onMouseMove);
+        window.addEventListener("mouseup", this._onMouseUp);
+        this._render();
+    }
+    OnMouseMove(e) {
+        if (!this._mouseDown) {
+            return;
+        }
+        this._mousePos.x = e.clientX;
+        this._mousePos.y = e.clientY;
+    }
+    Render() {
+        let delta = new Point(this._mousePos.x, this._mousePos.y);
+        delta.Subtract(this._mousePosLast);
+        this._mousePosLast.x = this._mousePos.x;
+        this._mousePosLast.y = this._mousePos.y;
+        delta.x = delta.x / this._scale;
+        delta.y = delta.y / this._scale;
+        this._pos.Subtract(delta);
+        this.Set();
+        if (this._mouseDown) {
+            requestAnimationFrame(this._render);
+        }
+    }
+    OnMouseUp(e) {
+        this._mouseDown = false;
+        window.removeEventListener("mousemove", this._onMouseMove);
+        window.removeEventListener("mouseup", this._onMouseUp);
+    }
+}
+class Svg extends SvgContainerEle {
+    constructor() {
+        super("svg");
+        this.ViewBox = new ViewBox(this);
+    }
+    get target() {
+        return this._target;
     }
     widthHeight(w, h) {
         this.setAttrNS("width", w.toString());
@@ -399,6 +584,14 @@ class Svg extends SvgEle {
     viewBox(x, y, w, h) {
         this.setAttrNS("viewBox", `${x},${y},${w},${h}`);
         return this;
+    }
+}
+class SvgG extends SvgContainerEle {
+    get target() {
+        return this._target;
+    }
+    constructor() {
+        super("g");
     }
 }
 class Circle extends SvgEle {
@@ -412,6 +605,26 @@ class Circle extends SvgEle {
     Center(x, y) {
         this.setAttrNS("cx", x.toString());
         this.setAttrNS("cy", y.toString());
+        return this;
+    }
+}
+class Rect extends SvgEle {
+    get target() {
+        return this._target;
+    }
+    constructor(x, y, w, h) {
+        super("rect");
+        this.pos(new Point(x, y));
+        this.widthHeight(w, h);
+    }
+    pos(p) {
+        this.setAttrNS("x", p.x.toString());
+        this.setAttrNS("y", p.y.toString());
+        return this;
+    }
+    widthHeight(w, h) {
+        this.setAttrNS("width", w.toString());
+        this.setAttrNS("height", h.toString());
         return this;
     }
 }
@@ -430,6 +643,60 @@ class Path extends SvgEle {
             s += `L${randBetween(min, max)},${randBetween(min, max)} `;
         }
         return s;
+    }
+}
+class SvgText extends SvgContainerEle {
+    get target() {
+        return this._target;
+    }
+    constructor(text = "") {
+        super("text");
+        if (text.length > 0) {
+            this.target.textContent = text;
+        }
+    }
+    pos(x, y) {
+        this.x(x);
+        this.y(y);
+        return this;
+    }
+    x(i) {
+        this.setAttrNS("x", i.toString());
+        return this;
+    }
+    y(i) {
+        this.setAttrNS("y", i.toString());
+        return this;
+    }
+}
+class SvgTSpan extends SvgEle {
+    get target() {
+        return this._target;
+    }
+    constructor(text) {
+        super("tspan");
+        this.target.textContent = text;
+    }
+    pos(x, y) {
+        this.x(x);
+        this.y(y);
+        return this;
+    }
+    x(i) {
+        this.setAttrNS("x", i.toString());
+        return this;
+    }
+    y(i) {
+        this.setAttrNS("y", i.toString());
+        return this;
+    }
+    dx(x) {
+        this.setAttrNS("dx", x);
+        return this;
+    }
+    dy(y) {
+        this.setAttrNS("dy", y);
+        return this;
     }
 }
 class MyTextInput {

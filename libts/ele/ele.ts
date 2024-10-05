@@ -298,19 +298,19 @@ class MouseClickAndDrag {
     private _boundUp: (e: MouseEvent) => void = e => {};
 
     constructor(ele: Ele, private _onDrag: (e: MouseEvent) => void) {
-        ele.target.addEventListener("mousedown", e => {
+        ele.target.addEventListener("pointerdown", e => {
             e.preventDefault();
             e.stopPropagation();
             this._boundDrag = this._onDrag.bind(ele);
             this._boundUp = this.OnMouseUp.bind(this);
-            window.addEventListener("mousemove", this._boundDrag);
-            window.addEventListener("mouseup", this._boundUp);
+            window.addEventListener("pointermove", this._boundDrag);
+            window.addEventListener("pointerup", this._boundUp);
         })
     }
 
     OnMouseUp(e: Event) {
-        window.removeEventListener("mousemove", this._boundDrag)
-        window.removeEventListener("mouseup", this._boundUp)
+        window.removeEventListener("pointermove", this._boundDrag)
+        window.removeEventListener("pointerup", this._boundUp)
     }
 }
 
@@ -318,18 +318,18 @@ class MouseDownUp {
     private _boundUp: (e: MouseEvent) => void = e => {};
 
     constructor(ele: Ele, private _onDown: (e: MouseEvent) => void, private _onUp: (e: MouseEvent) => void) {
-        ele.target.addEventListener("mousedown", e => {
+        ele.target.addEventListener("pointerdown", e => {
             e.preventDefault();
             e.stopPropagation();
             this._onDown(e as MouseEvent);
             this._boundUp = this.OnMouseUp.bind(this);
-            window.addEventListener("mouseup", this._boundUp);
+            window.addEventListener("pointerup", this._boundUp);
         })
     }
 
     OnMouseUp(e: MouseEvent) {
         this._onUp(e);
-        window.removeEventListener("mouseup", this._boundUp);
+        window.removeEventListener("pointerup", this._boundUp);
     }
 }
 
