@@ -83,6 +83,8 @@ window.oncontextmenu = e => {
     e.preventDefault()
     const newPath = prompt("background image url")
 
+    if (newPath === null) return;   // pressed cancel
+
     var style = (theFlex.target as HTMLDivElement).style
 
     if (newPath) {
