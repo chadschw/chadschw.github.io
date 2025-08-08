@@ -1,0 +1,23 @@
+html,
+body {
+    margin: 0;
+    height: 100%;
+}
+
+body {
+    background-image: radial-gradient(#ffffff, #dfdfdf, #bfbfbf);
+}
+
+#canvas {
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+#ship {
+    fill: #404040;
+}
+
+#ship2 {
+    fill: #a60f2d;
+}

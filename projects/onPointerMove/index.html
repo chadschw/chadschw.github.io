@@ -1,0 +1,73 @@
+<html>
+    <head>
+        <style>
+            body, html {
+                height: 100%;
+                margin: 0;
+            }
+
+            body {
+                background-color: #c0c0c0;
+            }
+        </style>
+    </head>
+    <body>
+        <div
+            id="pointer-position"
+            style="
+                font-family: monospace;
+                font-size: 12px;
+                position: absolute;
+                top: 4px;
+                left: 4px;
+            "
+        ></div>
+
+        <div
+            id="result"
+            style="
+                font-family: monospace;
+                font-size: 12px;
+                position: absolute;
+                top: 14px;
+                left: 4px;
+            "
+        ></div>
+
+        <div
+            id="target1"
+            style="
+                border: 1px solid red;
+                height: 40px;
+                position: absolute;
+                width: 40px;
+                top: 200px;
+                left: 300px;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            "
+            onpointerleave="OnPointerEnter1()"
+        >1</div>
+
+        <div
+            id="target2"
+            style="
+                border: 1px solid red;
+                height: 40px;
+                position: absolute;
+                width: 40px;
+                top: 200px;
+                left: 600px;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            "
+            onpointerenter="OnPointerEnter2(event)"
+        >2</div>
+
+        <script src="onpointermove.js"></script>
+    </body>
+</html>

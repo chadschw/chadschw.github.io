@@ -76,51 +76,62 @@ class ArrayIdx {
     }
 }
 
-let urls = [
-    "https://w.wallhaven.cc/full/j3/wallhaven-j3m8y5.png",
-    "https://w.wallhaven.cc/full/l8/wallhaven-l83o92.jpg",
-    "https://w.wallhaven.cc/full/l3/wallhaven-l3xk6q.jpg",
-    "https://w.wallhaven.cc/full/lm/wallhaven-lmk652.jpg",
-    "https://w.wallhaven.cc/full/o5/wallhaven-o55z5l.jpg",
-    "https://w.wallhaven.cc/full/p9/wallhaven-p99qv3.jpg",
-    "https://w.wallhaven.cc/full/3l/wallhaven-3llyq6.jpg",
-    "https://i.redd.it/uhghw2a4yzea1.jpg",
-    "https://external-preview.redd.it/xof464Z61S5bWkeydrni-NWm9pLaRmXf8LdngyxTJl0.png?auto=webp&v=enabled&s=6618cbdb36544db8e9f7f199c27834e4d743d768",
-    "https://i.redd.it/ksw1nb3t3faa1.png",
-    "https://i.redd.it/hkfyvjyav1ea1.jpg",
-    "https://i.redd.it/xu6nr0c0jhda1.jpg",
-    "https://preview.redd.it/wkp1biib47da1.png?width=3640&format=png&auto=webp&v=enabled&s=4231334731df1be468bc4252cd5092b0c6558387",
-    "https://preview.redd.it/j2yf7bna47da1.png?width=3060&format=png&auto=webp&v=enabled&s=ef6f4242dc04ab768fe790a1cab9fe744ab4b308",
-    "https://preview.redd.it/4ob0sfya47da1.png?width=1998&format=png&auto=webp&v=enabled&s=5885a578ded71138fdc68159d9c753ce69cbb482",
-    "https://preview.redd.it/wj5ccona47da1.jpg?width=5000&format=pjpg&auto=webp&v=enabled&s=91a3f322b543b30d8515208f04594bece0206484",
-    "https://i.redd.it/g4crddfnmt9a1.jpg",
-    "https://w.wallhaven.cc/full/kx/wallhaven-kx98xd.jpg",
-    "https://w.wallhaven.cc/full/o5/wallhaven-o59gvl.jpg",
-    "https://w.wallhaven.cc/full/4y/wallhaven-4ydrmx.jpg",
-    "https://w.wallhaven.cc/full/4g/wallhaven-4gyk1e.jpg",
-    "https://w.wallhaven.cc/full/48/wallhaven-48vdmj.jpg",
-    "https://w.wallhaven.cc/full/nz/wallhaven-nzl7dg.jpg",
-    "https://w.wallhaven.cc/full/vg/wallhaven-vglogp.jpg",
-    "https://w.wallhaven.cc/full/45/wallhaven-457565.jpg",
-    "https://w.wallhaven.cc/full/0w/wallhaven-0wd816.jpg",
-    "https://w.wallhaven.cc/full/6q/wallhaven-6qwdqw.jpg",
-    "https://w.wallhaven.cc/full/nr/wallhaven-nrz63m.jpg",
-    "https://w.wallhaven.cc/full/83/wallhaven-83o1x2.jpg",
-    "https://w.wallhaven.cc/full/4v/wallhaven-4v887l.jpg",
-    "https://w.wallhaven.cc/full/qd/wallhaven-qd93g5.jpg",
-    "https://w.wallhaven.cc/full/76/wallhaven-769zl3.png",
-    "https://w.wallhaven.cc/full/r7/wallhaven-r7oo3w.jpg",
-    "https://w.wallhaven.cc/full/r7/wallhaven-r7yv27.jpg",
-    "https://w.wallhaven.cc/full/42/wallhaven-428rzy.jpg",
-    "https://w.wallhaven.cc/full/76/wallhaven-76jmke.jpg",
-    "https://w.wallhaven.cc/full/49/wallhaven-49glrw.jpg",
-    "https://w.wallhaven.cc/full/4o/wallhaven-4om8j7.jpg",
-    "https://w.wallhaven.cc/full/p2/wallhaven-p2jj8j.jpg",
-    "https://w.wallhaven.cc/full/49/wallhaven-495x9x.jpg",
-    "https://w.wallhaven.cc/full/xl/wallhaven-xllm6o.jpg",
-    "https://w.wallhaven.cc/full/p2/wallhaven-p2pm8m.jpg",
-    "https://w.wallhaven.cc/full/p2/wallhaven-p2o5pm.jpg",
-];
+// let urls = [
+//     "https://w.wallhaven.cc/full/j3/wallhaven-j3m8y5.png",
+//     "https://w.wallhaven.cc/full/l8/wallhaven-l83o92.jpg",
+//     "https://w.wallhaven.cc/full/l3/wallhaven-l3xk6q.jpg",
+//     "https://w.wallhaven.cc/full/lm/wallhaven-lmk652.jpg",
+//     "https://w.wallhaven.cc/full/o5/wallhaven-o55z5l.jpg",
+//     "https://w.wallhaven.cc/full/p9/wallhaven-p99qv3.jpg",
+//     "https://w.wallhaven.cc/full/3l/wallhaven-3llyq6.jpg",
+//     "https://i.redd.it/uhghw2a4yzea1.jpg",
+//     "https://external-preview.redd.it/xof464Z61S5bWkeydrni-NWm9pLaRmXf8LdngyxTJl0.png?auto=webp&v=enabled&s=6618cbdb36544db8e9f7f199c27834e4d743d768",
+//     "https://i.redd.it/ksw1nb3t3faa1.png",
+//     "https://i.redd.it/hkfyvjyav1ea1.jpg",
+//     "https://i.redd.it/xu6nr0c0jhda1.jpg",
+//     "https://preview.redd.it/wkp1biib47da1.png?width=3640&format=png&auto=webp&v=enabled&s=4231334731df1be468bc4252cd5092b0c6558387",
+//     "https://preview.redd.it/j2yf7bna47da1.png?width=3060&format=png&auto=webp&v=enabled&s=ef6f4242dc04ab768fe790a1cab9fe744ab4b308",
+//     "https://preview.redd.it/4ob0sfya47da1.png?width=1998&format=png&auto=webp&v=enabled&s=5885a578ded71138fdc68159d9c753ce69cbb482",
+//     "https://preview.redd.it/wj5ccona47da1.jpg?width=5000&format=pjpg&auto=webp&v=enabled&s=91a3f322b543b30d8515208f04594bece0206484",
+//     "https://i.redd.it/g4crddfnmt9a1.jpg",
+//     "https://w.wallhaven.cc/full/kx/wallhaven-kx98xd.jpg",
+//     "https://w.wallhaven.cc/full/o5/wallhaven-o59gvl.jpg",
+//     "https://w.wallhaven.cc/full/4y/wallhaven-4ydrmx.jpg",
+//     "https://w.wallhaven.cc/full/4g/wallhaven-4gyk1e.jpg",
+//     "https://w.wallhaven.cc/full/48/wallhaven-48vdmj.jpg",
+//     "https://w.wallhaven.cc/full/nz/wallhaven-nzl7dg.jpg",
+//     "https://w.wallhaven.cc/full/vg/wallhaven-vglogp.jpg",
+//     "https://w.wallhaven.cc/full/45/wallhaven-457565.jpg",
+//     "https://w.wallhaven.cc/full/0w/wallhaven-0wd816.jpg",
+//     "https://w.wallhaven.cc/full/6q/wallhaven-6qwdqw.jpg",
+//     "https://w.wallhaven.cc/full/nr/wallhaven-nrz63m.jpg",
+//     "https://w.wallhaven.cc/full/83/wallhaven-83o1x2.jpg",
+//     "https://w.wallhaven.cc/full/4v/wallhaven-4v887l.jpg",
+//     "https://w.wallhaven.cc/full/qd/wallhaven-qd93g5.jpg",
+//     "https://w.wallhaven.cc/full/76/wallhaven-769zl3.png",
+//     "https://w.wallhaven.cc/full/r7/wallhaven-r7oo3w.jpg",
+//     "https://w.wallhaven.cc/full/r7/wallhaven-r7yv27.jpg",
+//     "https://w.wallhaven.cc/full/42/wallhaven-428rzy.jpg",
+//     "https://w.wallhaven.cc/full/76/wallhaven-76jmke.jpg",
+//     "https://w.wallhaven.cc/full/49/wallhaven-49glrw.jpg",
+//     "https://w.wallhaven.cc/full/4o/wallhaven-4om8j7.jpg",
+//     "https://w.wallhaven.cc/full/p2/wallhaven-p2jj8j.jpg",
+//     "https://w.wallhaven.cc/full/49/wallhaven-495x9x.jpg",
+//     "https://w.wallhaven.cc/full/xl/wallhaven-xllm6o.jpg",
+//     "https://w.wallhaven.cc/full/p2/wallhaven-p2pm8m.jpg",
+//     "https://w.wallhaven.cc/full/p2/wallhaven-p2o5pm.jpg",
+// ];
+const urls = [
+    "/media/wallhaven-0jy83y.jpg",
+    "/media/wallhaven-0pv6o9.jpg",
+    "/media/wallhaven-3ko2v9.jpg",
+    "/media/wallhaven-4dp5d3.jpg",
+    "/media/wallhaven-4dwl3o.jpg",
+    "/media/wallhaven-j576ow.jpg",
+    "/media/wallhaven-j8jd9w.jpg",
+    "/media/wallhaven-q6g6yl.jpg"
+]
+
 
 let arrIdx = new ArrayIdx(urls);
 
@@ -133,8 +144,25 @@ let theDiv = div()
         width: 100%;
     `) as Div;
 
+let messageSpan = span()
+    .styleAttr(`
+        background-color: rgba(255, 255, 255, 0.75);
+        border-radius: 2px;
+        padding: 10px;
+        position: absolute;
+        top: 20px;
+        left: 10px;    
+    `)
+
+function setMessageText(text: string, msTimeout: number = 3000)
+{
+    messageSpan.target.textContent = text;
+    setTimeout(() => messageSpan.target.textContent = '', msTimeout)
+}
+
 page().children([
-    theDiv
+    theDiv,
+    messageSpan
     // flex().addChild(
     //     div()
     //         .children([
@@ -189,6 +217,24 @@ window.addEventListener("keypress", e => {
     theDiv.target.style.backgroundImage = `url(${urls[idx]})`;
 });
 
-window.addEventListener("mousedown", e => {
-    theDiv.target.style.backgroundImage = `url(${urls[arrIdx.next()]})`;
+window.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setMessageText(`button: ${e.button}`)
+
+    if (e.button === 0)
+    {
+        theDiv.target.style.backgroundImage = `url(${urls[arrIdx.next()]})`;
+    }
+})
+
+// Quest three browser (in its infinite wisdom) makes button "B" and "Y" fire context menu events.
+window.addEventListener("contextmenu", e => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    setMessageText(`contextmenu event`)
+
+    theDiv.target.style.backgroundImage = `url(${urls[arrIdx.prev()]})`;
 })
