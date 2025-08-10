@@ -107,6 +107,8 @@ function VectorTests() {
 }
 
 class Const {
+    static HelpString = "Move ship 1: wasd. Move ship 2: arrow keys. Change time scale: mouse wheel. Play/Pause: space bar. Reset: escape."
+
     static GroundFriction = 0.93
 
     static AngleUp = -Math.PI / 2
@@ -129,6 +131,13 @@ class Const {
     static DegToRad(deg) {
         return deg * Math.PI / 180
     }
+
+    static TimeScale = 1
+    static MaxTimeScale = 2
+    static MinTimeScale = 0.1
+    static TimeScaleStep = 0.1
+
+    static Pause = false
 }
 
 class Ship {
@@ -155,7 +164,15 @@ class Ship {
         }
 
         const pos = this.position
-        pos.Add(this.velocity)
+
+        if (Const.TimeScale !== 1) {
+            const scaledVelocity = Vector.FromMagAng(this.velocity.mag * Const.TimeScale, this.velocity.ang)
+            pos.Add(scaledVelocity)
+        }
+        else {
+            pos.Add(this.velocity)
+        }
+
 
         const boundingRect = this.GetBoundingRect()
         if (pos.y + this.yOffsetToBottom > boundingRect.bottom) {
@@ -163,6 +180,7 @@ class Ship {
             this.velocity.y = 0
             this.velocity.ang = Const.AngleUp
         } else if (pos.y - this.yOffsetToTop < 0) {
+            // uncomment to enforce ceiling.
             // pos.y = this.yOffsetToTop
             // this.velocity.y = 0
         }
@@ -201,12 +219,15 @@ class App {
         window.addEventListener("keydown", this.onkeydown)
         window.addEventListener("keyup", this.onkeyup)
 
+        window.addEventListener("wheel", this.onwheel)
+
         const shipEle = document.getElementById("ship")
         this.ship = new Ship(shipEle, Vector.FromXY(100, 100), Vector.FromMagAng(1, Const.AngleUp), this.GetBoundingRect)
 
         const ship2Ele = document.getElementById("ship2")
         this.ship2 = new Ship(ship2Ele, Vector.FromXY(200, 100), Vector.FromMagAng(1, Const.AngleUp), this.GetBoundingRect)
 
+        this.lastTimestamp = 0
         this.render()
     }
 
@@ -224,8 +245,24 @@ class App {
     }
 
     onkeydown = e => {
+        // The we've already registered the pressed key, return.
         if (this.pressedKeys.indexOf(e.key) >= 0) return
         this.pressedKeys.push(e.key)
+
+        console.log(e.key)
+
+        if (this.isKeyDown(' ')) {
+            Const.Pause = !Const.Pause
+        }
+
+        if (this.isKeyDown('Escape')) {
+            Const.Pause = false
+            this.ship.velocity = Vector.FromXY(0, 0)
+            this.ship.position = Vector.FromXY(100, this.GetBoundingRect().bottom)
+
+            this.ship2.velocity = Vector.FromXY(0, 0)
+            this.ship2.position = Vector.FromXY(150, this.GetBoundingRect().bottom)
+        }
     }
 
     onkeyup = e => {
@@ -233,7 +270,21 @@ class App {
         this.pressedKeys.splice(idx, 1)
     }
 
-    render = () => {
+    onwheel = e => {
+        if (e.deltaY < 0) {
+            Const.TimeScale = Math.min(Const.MaxTimeScale, Const.TimeScale + Const.TimeScaleStep)
+        } else {
+            Const.TimeScale = Math.max(Const.MinTimeScale, Const.TimeScale - Const.TimeScaleStep)
+        }
+    }
+
+    render = (timestamp) => {
+        if (Const.Pause) {
+            this.WriteText("Paused. Press space bar to play. " + Const.HelpString)
+            requestAnimationFrame(this.render)
+            return
+        }
+
         if (this.isKeyDown('w')) {
             this.ship.velocity.mag += .2
         }
@@ -263,6 +314,13 @@ class App {
         this.ship2.render()
 
         //this.WriteText(`(${this.ship.position.x.toFixed(0)},${this.ship.position.y.toFixed(0)}) (${this.ship.velocity.mag.toFixed(1)},${this.ship.velocity.ang.toFixed(2)})`)
+
+        // const deltaT = timestamp - this.lastTimestamp
+        // this.lastTimestamp = timestamp
+        // this.WriteText(`delta t: ${deltaT.toFixed(1)}ms`)
+
+        this.WriteText(`TimeScale: ${Const.TimeScale.toFixed(1)}`)
+
         requestAnimationFrame(this.render)
     }
 
