@@ -4,20 +4,27 @@ body {
     height: 100%;
 }
 
-body {
-    background-image: radial-gradient(#ffffff, #dfdfdf, #bfbfbf);
-}
-
 #canvas {
+    background-color: #cccccc;
     display: block;
     height: 100%;
     width: 100%;
 }
 
 #ship {
-    fill: #404040;
+    fill: #dddddd;
+}
+
+#ship-tail {
+    fill: transparent;
+    stroke: #dddddd;
+    stroke-width: 1px;
 }
 
 #ship2 {
-    fill: #a60f2d;
+    fill: #bbbbbb;
+}
+
+#block {
+    fill: red;
 }

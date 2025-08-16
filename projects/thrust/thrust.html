@@ -8,14 +8,19 @@
 
 <body onload="init()">
     <svg id="canvas">
+        <g id="block" transform="translate(-100, -100)">
+            <rect x="0" y="0" width="10" height="10"></rect>
+        </g>
+
         <g id="ship" transform="rotate(0 100 100) translate(100,100)">
             <path d="M-20,10 L0,5 L20,10 L0,-10z"></path>
-            <!-- <path d="M0,-15 L0,-30" stroke="red" stroke-width="3"></path>
-            <text x="0" y="30" text-anchor="middle" style="font-family: monospace; font-size: 8px;">hi, my name is ship.</text> -->
+            <circle cx="0" cy="0" r="2" style="fill: white;"></circle>
         </g>
+        <path id="ship-tail"></path>
 
         <g id="ship2" transform="rotate(0 200 100) translate(200,100)">
             <path d="M-20,10 L0,5 L20,10 L0,-10z"></path>
+            <circle cx="0" cy="0" r="2" style="fill: white;"></circle>
         </g>
 
         <text id="text" x="4" y="10" style="font-family: monospace;"></text>

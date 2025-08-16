@@ -62,10 +62,20 @@ class Vector {
         this._UpdateMagAng()
     }
 
+    Copy() {
+        return Vector.FromXY(this.x, this.y)
+    }
+
     Add(other) {
         const x = this.x + other.x
         const y = this.y + other.y
         this.SetXY(x, y)
+    }
+
+    DistanceTo(other) {
+        const x = Math.abs(this.x - other.x)
+        const y = Math.abs(this.y - other.y)
+        return Vector.FromXY(x, y).mag
     }
 
     _UpdateXY() {
@@ -104,6 +114,11 @@ function VectorTests() {
 
     v = Vector.FromXY(0, 10)
     console.log(v.ToString())
+
+    let a = Vector.FromXY(0, 0)
+    let b = Vector.FromXY(1, 1)
+    console.log(a.DistanceTo(b))
+    console.log(b.DistanceTo(a))
 }
 
 class Const {
@@ -138,6 +153,8 @@ class Const {
     static TimeScaleStep = 0.1
 
     static Pause = false
+    static GameOver = false
+    static frameCount = 0
 }
 
 class Ship {
@@ -201,6 +218,59 @@ class Ship {
     }
 }
 
+class Tail {
+    constructor(tailEle, initialPosition, length) {
+        this.tailEle = tailEle
+        this.length = length
+        this.points = []
+        for (let i = 0; i < this.length; i++) {
+            this.points.push(initialPosition.Copy())
+        }
+    }
+
+    addPoint(p) {
+        this.points.unshift(p)
+        this.points.pop(p)
+    }
+
+    render() {
+        let d = `M${this.points[0].x},${this.points[0].y} `
+
+        for (let i = 1; i < this.points.length; i++) {
+            d += `L${this.points[i].x},${this.points[i].y} `
+        }
+
+        this.tailEle.setAttribute("d", d)
+    }
+
+    Reset = position => {
+        this.points = []
+        for (let i = 0; i < this.length; i++) {
+            this.points.push(position.Copy())
+        }
+    }
+}
+
+class Block {
+    constructor(blockEle, position, size, getBoundingClientRect) {
+        this.blockEle = blockEle
+        this.position = position
+        this.size = size
+        this.getBoundingClientRect = getBoundingClientRect
+
+        const rect = this.getBoundingClientRect()
+        this.position.y = rect.height / 2
+    }
+
+    render() {
+        const halfWidth = this.size.x / 2
+        const halfHeight = this.size.y / 2
+        this.blockEle.setAttribute("transform", `translate(${this.position.x - halfWidth} ${this.position.y - halfHeight})`)
+        this.blockEle.setAttribute("width", `${this.size.x}`)
+        this.blockEle.setAttribute("height", `${this.size.y}`)
+    }
+}
+
 
 function init() {
     //VectorTests()
@@ -220,9 +290,17 @@ class App {
         window.addEventListener("keyup", this.onkeyup)
 
         window.addEventListener("wheel", this.onwheel)
+        window.addEventListener("pointerdown", this.onpointerdown)
+
+        const blockEle = document.getElementById("block")
+        this.block = new Block(blockEle, Vector.FromXY(300, 0), Vector.FromXY(10, 10), this.GetBoundingRect)
+        this.block.render()
 
         const shipEle = document.getElementById("ship")
         this.ship = new Ship(shipEle, Vector.FromXY(100, 100), Vector.FromMagAng(1, Const.AngleUp), this.GetBoundingRect)
+
+        const shipTailEle = document.getElementById("ship-tail")
+        this.shipTail = new Tail(shipTailEle, this.ship.position, 75)
 
         const ship2Ele = document.getElementById("ship2")
         this.ship2 = new Ship(ship2Ele, Vector.FromXY(200, 100), Vector.FromMagAng(1, Const.AngleUp), this.GetBoundingRect)
@@ -252,16 +330,32 @@ class App {
         console.log(e.key)
 
         if (this.isKeyDown(' ')) {
-            Const.Pause = !Const.Pause
+            if (Const.GameOver) {
+                this.reset()
+            } else {
+                Const.Pause = !Const.Pause
+            }
         }
 
         if (this.isKeyDown('Escape')) {
-            Const.Pause = false
-            this.ship.velocity = Vector.FromXY(0, 0)
-            this.ship.position = Vector.FromXY(100, this.GetBoundingRect().bottom)
+            this.reset()
+        }
+    }
 
-            this.ship2.velocity = Vector.FromXY(0, 0)
-            this.ship2.position = Vector.FromXY(150, this.GetBoundingRect().bottom)
+    reset = () => {
+        Const.Pause = false
+
+        this.ship.velocity = Vector.FromXY(0, 0)
+        this.ship.position = Vector.FromXY(100, this.GetBoundingRect().bottom)
+        this.shipTail.Reset(this.ship.position)
+
+        this.ship2.velocity = Vector.FromXY(0, 0)
+        this.ship2.position = Vector.FromXY(150, this.GetBoundingRect().bottom)
+
+        if (Const.GameOver) {
+            Const.frameCount = 0
+            Const.GameOver = false
+            this.render()
         }
     }
 
@@ -278,12 +372,14 @@ class App {
         }
     }
 
-    render = (timestamp) => {
+    render = timestamp => {
         if (Const.Pause) {
             this.WriteText("Paused. Press space bar to play. " + Const.HelpString)
             requestAnimationFrame(this.render)
             return
         }
+
+        Const.frameCount++
 
         if (this.isKeyDown('w')) {
             this.ship.velocity.mag += .2
@@ -298,6 +394,8 @@ class App {
             this.ship.velocity.ang += Const.DegToRad(5)
         }
         this.ship.render()
+        this.shipTail.addPoint(this.ship.position.Copy())
+        this.shipTail.render()
 
         if (this.isKeyDown('ArrowUp')) {
             this.ship2.velocity.mag += .2
@@ -319,12 +417,37 @@ class App {
         // this.lastTimestamp = timestamp
         // this.WriteText(`delta t: ${deltaT.toFixed(1)}ms`)
 
-        this.WriteText(`TimeScale: ${Const.TimeScale.toFixed(1)}`)
+        const d1 = this.ship.position.DistanceTo(this.block.position)
+        const d2 = this.ship2.position.DistanceTo(this.block.position)
+        if (d1 < this.block.size.x / 2) {
+            this.setWinner(1)
+        }
+        else if (d2 < this.block.size.x / 2) {
+            this.setWinner(2)
+        }
+        else {
+            this.WriteText(`TimeScale: ${Const.TimeScale.toFixed(1)}. Distance: ${d1.toFixed(1)}. FrameCount: ${Const.frameCount}`)
+        }
 
-        requestAnimationFrame(this.render)
+        if (!Const.GameOver) {
+            requestAnimationFrame(this.render)
+        }
+    }
+
+    setWinner = shipNumber => {
+        Const.GameOver = true
+        this.WriteText(`Ship ${shipNumber} wins! Press 'Esc' or 'space bar' to reset. frameCount: ${Const.frameCount}`)
     }
 
     isKeyDown(key) {
         return this.pressedKeys.indexOf(key) >= 0
+    }
+
+    onpointerdown = e => {
+        const mousepos = Vector.FromXY(e.clientX, e.clientY)
+        console.log(mousepos)
+
+        this.block.position = mousepos
+        this.block.render()
     }
 }
